@@ -154,6 +154,9 @@ class TAP{
     //vars and datatypes
     uint32_t messages_since_last_datalink_telem;
     TAP_ADDRESS_HEADER tx_header;
+
+    //values
+    uint16_t TAP_SOF_WORD = 0xAA55;
     
 
 };

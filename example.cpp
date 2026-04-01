@@ -37,26 +37,11 @@
 #define ALTIMETER_TELEM_PRECISSION 100
 #define HEADING_TELEM_PRECISSION 10
 
-//===== COMMON STRUCTURES =====
-//This particluar one is probably better suited to some other class
-//Eh
-
-struct location_data{
-    double lat;
-    double lon;
-    double alt;
-    double roll;
-    double pitch;
-    double heading;
-};
-
 //===== GLOBAL VARS =====
 
 //SCHEDULING
 uint32_t ms_last_change = 0;
 uint32_t ms_last_tap = 0;
-
-location_data locdata;
 
 // ================================================================================================
 // TAP PROTOCOL
@@ -109,8 +94,13 @@ uint8_t tap_telemetry(){
 
         telem.lat = 43.323228;
         telem.lon = -3.017115;
-        telem.alt = 50;
-        telem.heading = -3.0;
+
+        //telem.alt = 50;
+        //telem.heading = 30;
+
+        // Use these to check if COBS works!
+        telem.alt = 0xAA55;
+        telem.heading = 0xAA55;
 
         tap.tapSendTelem(telem);
         return(0);

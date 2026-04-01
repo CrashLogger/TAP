@@ -16,14 +16,10 @@
         messages_since_last_datalink_telem = 0;
     }
 
-    uint8_t tapInit(uint8_t source_id){
-        
-    }
-
-
     uint8_t TAP::serialize(const TAP_ADDRESS_HEADER *header, const void *payload, TAP_TRAILER *trailer, uint8_t *buffer, uint8_t max_len) {
         if (header->message_len + sizeof(TAP_ADDRESS_HEADER) + sizeof(TAP_TRAILER) > max_len) {
-            return -1;
+            //Too big for the allowed size!
+            return TAP_ERROR_INVALID_LENGTH;
         }
         // Serialize header
         memcpy(buffer, header, sizeof(TAP_ADDRESS_HEADER));
@@ -37,6 +33,31 @@
         if (trailer) {
             memcpy(buffer + offset, trailer, sizeof(TAP_TRAILER));
         }
+
+        //COBS
+        uint16_t cobs_last_filed_pos = 0x0006;
+        //We don't let it check the first or last two bytes of the message because WE KNOW those have the SOF_WORD and we WANT them to have the SOF_WORD
+        uint16_t endptr = (sizeof(TAP_ADDRESS_HEADER) + header->message_len + sizeof(TAP_TRAILER));
+        for(uint16_t i = 2; i<(endptr-2); i++){
+            //Remember: network variables (like the ones we use for protocols) are Big Endian, while memory variables are Little Endian
+            //That makes a lot of sense and does not become confusing at any point.
+            printf("Checking %02X %02X\n", buffer[i], buffer[i+1]);
+            if ((buffer[i] << 8 | buffer[i+1]) == __builtin_bswap16(TAP_SOF_WORD)){
+                printf("FOUND ONE!\n");
+                printf("Buffer bytes: %d and %d should be referenced in: %04X\n", i, i+1, cobs_last_filed_pos);
+                buffer[cobs_last_filed_pos] = (uint8_t)i;
+                buffer[cobs_last_filed_pos+1] = (uint8_t)i >> 8;
+                
+                //See, not confusing at all
+                cobs_last_filed_pos = (i);
+
+                //printf("Found one of the bastards!\n");
+            }
+            // If there are no more TAP_SOF_WORD usages, we set the pointer filed to 0
+            buffer[cobs_last_filed_pos] = (uint8_t)0x00;
+            buffer[cobs_last_filed_pos+1] = (uint8_t)0x00;
+        }
+
         return offset + sizeof(TAP_TRAILER);
     }
     
@@ -45,11 +66,11 @@
         uint8_t buffer[255];
         TAP::TAP_ADDRESS_HEADER header;
         TAP::TAP_TRAILER trailer;
-        header.sof_word = 0xAA55;
+        header.sof_word = TAP_SOF_WORD;
         header.message_type = TELEMETRY;
         header.message_len = sizeof(TAP_TELEMETRY);
 
-        trailer.eof_word = 0xAA55;
+        trailer.eof_word = TAP_SOF_WORD;
 
         uint8_t len = serialize(&header, &telemetry, &trailer, buffer, sizeof(buffer));
         if (len == 0) return TAP::TAP_ERROR_INVALID_LENGTH;
