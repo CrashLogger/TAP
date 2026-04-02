@@ -95,6 +95,7 @@ uint8_t tap_telemetry(){
         telem.lat = 43.323228;
         telem.lon = -3.017115;
 
+        // Use these for somewhat realistic values!
         //telem.alt = 50;
         //telem.heading = 30;
 
@@ -152,4 +153,5 @@ int main() {
         tap_telemetry();
 
     }
+    return(0);
 }

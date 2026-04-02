@@ -157,6 +157,10 @@ class TAP{
 
     //values
     uint16_t TAP_SOF_WORD = 0xAA55;
+
+    // ========================================================================================
+    //Methods
+    uint8_t tapCobs(uint8_t* message, uint16_t message_len);
     
 
 };
