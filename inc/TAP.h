@@ -62,10 +62,14 @@ class TAP{
     uint8_t source_id;
     uint8_t target_id;
 
+    //This is mostly useful for the example and some debugging. It could easily be private.
+    uint8_t* outputBuffer;
+
     enum TAP_ERROR : uint8_t {
         TAP_OK = 0,
         TAP_ERROR_CRC_MISMATCH = 1,
-        TAP_ERROR_INVALID_LENGTH = 2
+        TAP_ERROR_INVALID_LENGTH = 2,
+        TAP_ERROR_UNSUPPORTED_HEADER = 3
     };
 
     enum TAP_MESSAGE_TYPE : uint8_t {
@@ -156,7 +160,7 @@ class TAP{
     uint8_t serialize(const TAP_ADDRESS_HEADER *header, const void *payload, TAP_TRAILER *trailer, uint8_t *buffer, uint8_t max_len);
 
     //This should be able to fail to detect a correct struct after unraveling the header
-    uint8_t* deserialize(uint8_t *raw_message, uint8_t* message);
+    uint8_t deserialize(uint8_t *raw_message, uint8_t message_len);
 
     private:
     //vars and datatypes

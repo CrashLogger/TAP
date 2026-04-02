@@ -42,6 +42,7 @@
 //SCHEDULING
 uint32_t ms_last_change = 0;
 uint32_t ms_last_tap = 0;
+uint32_t ms_last_rx = 0;
 
 // ================================================================================================
 // TAP PROTOCOL
@@ -111,6 +112,24 @@ uint8_t tap_telemetry(){
     return(1);
 }
 
+uint8_t tap_rx(){
+
+    /*
+        This is where we process received messages.
+        As you can tell, we are faking it by feeding it the message the telemetry function sends.
+    */
+
+    if(to_ms_since_boot(get_absolute_time()) - ms_last_rx >= 1000){
+        ms_last_rx = to_ms_since_boot(get_absolute_time());
+
+        uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x2E, 0x63, 0xC0, 0x3E, 0x55, 0x8F, 0x00, 0x00, 0x00, 0xF5, 0x42, 0xB4, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x2F, 0xEF, 0xAA, 0x55};
+        tap.deserialize(test_buffer, (uint8_t)tap.outputBuffer[4]+4);
+        return(0);
+    }
+    return(1);
+}
+
+
 // GPIO Initialisation should all happen here pls thx
 int pico_gpio_init(void) {
     gpio_init(PICO_DEFAULT_LED_PIN);
@@ -134,11 +153,9 @@ uint8_t pico_set_led() {
     return(0);
 }
 
-
 int main() {
     stdio_init_all();
     sleep_ms(1000);
-    printf("Hello world!");
     int rc = pico_gpio_init();
     hard_assert(rc == PICO_OK);
 
@@ -154,6 +171,9 @@ int main() {
 
         //Sends a TAP message over USB Uart with GPS data
         tap_telemetry();
+
+        //Decodes a TAP message
+        tap_rx();
 
     }
     return(0);

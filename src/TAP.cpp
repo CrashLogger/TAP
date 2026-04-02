@@ -171,4 +171,38 @@
 
     //This should be able to fail to detect a correct struct after unraveling the header
     //TODO: Implement COBS decoding!!
-    uint8_t* deserialize(uint8_t *raw_message, uint8_t* message);
+    uint8_t TAP::deserialize(uint8_t *raw_message, uint8_t message_len){
+        //First we determine what kind of header we've received
+        TAP::TAP_ADDRESS_HEADER received_header;
+        memcpy(&received_header, raw_message, sizeof(TAP::TAP_ADDRESS_HEADER));
+        printf("Header type:%d\n", received_header.message_type);
+        switch(received_header.message_type){
+            case 0:
+                printf("Acknowledgement!\n");
+                break;
+            case 1:
+                printf("Direct command!\n");
+                break;
+            case 2:
+                printf("Indirect command!\n");
+                break;
+            case 16:
+                //"But this is the thing that creates the telemetry data why can it dissect other telemetry"
+                //Because it's the only message we've finished so far. Screw you.
+                printf("Telemetry!\n");
+                printf("Header + Payload length: %d\n", received_header.message_len);
+                TAP_TELEMETRY received_telemetry;
+                memcpy(&received_telemetry, raw_message+sizeof(TAP_ADDRESS_HEADER), received_header.message_len - sizeof(TAP_ADDRESS_HEADER));
+                printf("GPS: %f, %f\n", flipFloatEndianness(received_telemetry.lat), flipFloatEndianness(received_telemetry.lon));
+                break;
+            case 254:
+                printf("Datalink negotiation!\n");
+                break;
+            case 255:
+                printf("Datalink telemetry!\n");
+                break;
+            default:
+                return(TAP_ERROR_UNSUPPORTED_HEADER);
+        }
+        return(TAP::TAP_OK);
+    }
