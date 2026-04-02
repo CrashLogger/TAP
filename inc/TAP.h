@@ -158,10 +158,15 @@ class TAP{
     //values
     uint16_t TAP_SOF_WORD = 0xAA55;
 
+    //Constant for the CRC calculator
+    #define CRC16 0x8005
+
     // ========================================================================================
     //Methods
+    uint16_t crc_16(uint8_t* message, uint16_t message_len);
+
     uint8_t tapCobs(uint8_t* message, uint16_t message_len);
-    
+
 
 };
 

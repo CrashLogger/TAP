@@ -96,11 +96,11 @@ uint8_t tap_telemetry(){
         telem.lon = -3.017115;
 
         // Use these for somewhat realistic values!
-        //telem.alt = 50;
+        telem.alt = 50;
         //telem.heading = 30;
 
         // Use these to check if COBS works!
-        telem.alt = 0xAA55;
+        //telem.alt = 0xAA55;
         telem.heading = 0xAA55;
 
         tap.tapSendTelem(telem);
