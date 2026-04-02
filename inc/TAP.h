@@ -5,6 +5,11 @@ class TAP{
 
     public:
     TAP();
+    TAP(uint8_t source_id, uint8_t target_id){
+        TAP::source_id = source_id;
+        TAP::target_id = target_id;
+        return;
+    }
     /*
         About the "pragma" lines: I copied them from someone's NRF24L01 driver example
         They force the structs to fit into memory in funky ways and they are compiler dependent (oh boy)
@@ -53,6 +58,9 @@ class TAP{
     public:
     // ========================================================================================
     //vars and datatypes
+
+    uint8_t source_id;
+    uint8_t target_id;
 
     enum TAP_ERROR : uint8_t {
         TAP_OK = 0,
@@ -167,6 +175,7 @@ class TAP{
 
     uint8_t tapCobs(uint8_t* message, uint16_t message_len);
 
+    float flipFloatEndianness(float f);
 
 };
 

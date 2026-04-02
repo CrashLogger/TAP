@@ -46,7 +46,7 @@ uint32_t ms_last_tap = 0;
 // ================================================================================================
 // TAP PROTOCOL
 // Creating a global object is a good idea and definitely not frowned upon.
-TAP tap;
+TAP tap(01, 02);
 
     //The transmission header should be pretty constant
     TAP::TAP_ADDRESS_HEADER our_tx_header;
@@ -96,16 +96,19 @@ uint8_t tap_telemetry(){
         telem.lon = -3.017115;
 
         // Use these for somewhat realistic values!
-        telem.alt = 50;
-        //telem.heading = 30;
+        //telem.alt = 50;
+        telem.heading = 245;
+        telem.pitch = 90.0;
+        telem.roll = 90.0;
 
         // Use these to check if COBS works!
-        //telem.alt = 0xAA55;
-        telem.heading = 0xAA55;
+        telem.alt = 0xAA55;
+        //telem.heading = 0xAA55;
 
         tap.tapSendTelem(telem);
         return(0);
     }
+    return(1);
 }
 
 // GPIO Initialisation should all happen here pls thx
