@@ -1,4 +1,4 @@
-#v2026.04a
+#v2026.04b
 import serial
 import time
 import logging
@@ -10,7 +10,7 @@ class TAP_CLI:
         if port is None:
             self.serial = None
         else:
-            print("Serial is temporally disabled")
+            print("Serial is temporarily disabled")
             #self.serial = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
 
     def read_TAP_message(self):
