@@ -44,13 +44,17 @@ class TAP_message:
 
         self.packed_message = msg
         self.packed_header = self.packed_message[0:8]
-        self.packed_payload = self.packed_message[8:-4]
+        if self.header.messageType != ACK:
+            self.packed_payload = self.packed_message[8:-4]
         self.packed_trailer = self.packed_message[-4:]
 
     def pack_message(self):
-        self.packed_payload = self.payload.pack_payload()
-        
-        self.header.messageLength = len(self.packed_payload)
+        if self.header.messageType == ACK:
+            self.packed_payload = None
+            self.header.messageLength = 0X00
+        else:
+            self.packed_payload = self.payload.pack_payload()
+            self.header.messageLength = len(self.packed_payload)
         
 
         self.packed_header = self.header.pack_header()
@@ -60,8 +64,10 @@ class TAP_message:
         
 
         self.packed_trailer = self.trailer.pack_trailer()
-        
-        self.packed_message =  self.packed_header + self.packed_payload + self.packed_trailer
+        if self.header.messageType == ACK:
+            self.packed_message =  self.packed_header + self.packed_trailer
+        else:
+            self.packed_message =  self.packed_header + self.packed_payload + self.packed_trailer
         self.calculate_COBS()
         return self.packed_message
     
@@ -162,6 +168,8 @@ class TAP_trailer:
         self.CRC16 = calculator.checksum(data)
 
     def check_CRC16(self,header_bytes,payload_bytes):
+        if payload_bytes is None:
+            payload_bytes = bytearray()
         data = header_bytes + payload_bytes
         calculator = Calculator(Crc16.MODBUS)
         calculated_crc = calculator.checksum(data)
@@ -214,6 +222,37 @@ class TelemetryPayload:
             '>ffHhff', packed_data
         )
         return cls(lat, lon, alt, heading, roll, pitch)  
+    
+class DirectCommandPayload:
+    MAX_SIGNAL_COUNT = 8
+    def __init__(self, bools,values):
+        if values is None:
+            values = []
+        if len(values) > self.MAX_SIGNAL_COUNT:
+            raise ValueError(f"Max {self.MAX_SIGNAL_COUNT} signals allowed")
+        self.values = values 
+        for i in range(len(self.values),self.MAX_SIGNAL_COUNT):
+            self.values.append(0x0000)
+        self.bools = bools 
+    
+    def pack_payload(self):
+        count = len(self.values)
+        format = f'>HH{"H"*count}'
+        return struct.pack(format,
+            self.bools,
+            0x0000,
+            *self.values
+            )
+    
+    def unpack_payload(cls,packed_data):
+        if len(packed_data) < 1:
+            raise ValueError("Payload too short")
+        count = len(packed_data)/2
+        fmt = f'>{"H"*count}'
+        bools = struct.unpack('>H', packed_data[:2])
+        values = list(struct.unpack(fmt, packed_data[4:]))
+        return cls(bools, values)
+        
 
 class TelemetryDatalink:
     def __init__(self, RSSI, SNR, RTT, SENT_PKTS, DELTA_T):
