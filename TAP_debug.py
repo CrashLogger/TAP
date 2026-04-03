@@ -9,7 +9,7 @@ class TAP_CLI:
         if port is None:
             self.serial = None
         else:
-            self.serial = serial.Serial(port, baudrate, timeout)
+            self.serial = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
 
     def read_TAP_message(self):
         buffer = bytearray()
@@ -77,25 +77,25 @@ def send(serial_device,baudrate,timeout):
     print(f"Sending through device '{serial_device}', baudrate:{baudrate}, timeout: {timeout} :")
 
     #Init serial device
-    TAP_CLI = TAP_CLI(port=serial_device,baudrate=baudrate,timeout=timeout)
+    tap_cli = TAP_CLI(port=serial_device,baudrate=baudrate,timeout=timeout)
     
     tap_payload = TAP.TelemetryPayload(43.323228,-3.017115,0xAA55,245,90,90)
     tap_message = TAP.TAP_message(0x02,0x01,TAP.TELEMETRY,tap_payload)
     full_packet = tap_message.pack_message()
 
-    TAP_CLI.send_TAP_message(full_packet)
+    tap_cli.send_TAP_message(full_packet)
 
 
 def monitor(serial_device,baudrate,timeout):
     print("Monitor mode selected")
     
     #Init serial device
-    TAP_CLI = TAP_CLI(port=serial_device,baudrate=baudrate,timeout=timeout)
+    tap_cli = TAP_CLI(port=serial_device,baudrate=baudrate,timeout=timeout)
    
     #Infinite loop to monitor incoming messages
     while True:
         try:
-            TAP_msg = TAP_CLI.read_TAP_message()
+            TAP_msg = tap_cli.read_TAP_message()
             TAP_msg.string()
 
         except Exception as e:
