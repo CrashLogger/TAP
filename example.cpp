@@ -1,4 +1,5 @@
 #include "pico/stdlib.h"
+#include "hardware/pwm.h"
 #include <stdio.h>
 #include "string.h"
 #include "TAP.h"
@@ -12,30 +13,6 @@
 #define NAV_LIGHTS 16                   //TAIL, STARBOARD AND PORT LIGHTS
 #define STROBES 17                      //ALL AROUND STROBE LIGHTS
 #define RADIO_LINK_LOSS_INDICATOR 14    //UNUSED IN CURRENT PROTOTYPE
-
-//PWM IO, 0 is left side and 1 is right side
-#define ESC_PIN 22
-#define AIL_0_PIN 17
-#define AIL_1_PIN 16
-#define RUD_0_PIN 19
-#define RUD_1_PIN 18
-
-//GPS NEO6M DEFINTIONS
-#define UART_ID uart1
-#define TAP_UART_ID uart0
-#define BAUD_RATE 9600
-#define DATA_BITS 8
-#define STOP_BITS 1
-#define PARITY    UART_PARITY_NONE
-#define UART_TX_PIN 4
-#define UART_RX_PIN 5
-
-//DEFINITIONS FOR CONTROL SURFACES
-#define VTAIL_GAIN 0.5
-
-//DEFINITIONS FOR TELEMETRY SCALING
-#define ALTIMETER_TELEM_PRECISSION 100
-#define HEADING_TELEM_PRECISSION 10
 
 //===== GLOBAL VARS =====
 
@@ -52,10 +29,6 @@ TAP tap(01, 02);
     //The transmission header should be pretty constant
     TAP::TAP_ADDRESS_HEADER our_tx_header;
     TAP::TAP_TRAILER our_tx_trailer;
-
-    //TAP DEFAULTS!
-    uint16_t tap_default_sof = 0xAA55;
-    uint16_t tap_default_eof = 0x55AA;
 
 // ================================================================================================
 //Although the change is quick enough not to break 99.9999% of the time, this could be atomic-ised.
@@ -112,6 +85,19 @@ uint8_t tap_telemetry(){
     return(1);
 }
 
+uint8_t direct_command_worker(TAP::TAP_DIRECT_COMMAND command){
+    //Check if the armed bit is high
+    if(command.bools > 0x8000){
+        printf("Armed!\n");
+        printf("Motor(s) going BRRRRRRRRR at: %d speed!!\n", command.channel_0);
+    }
+    else{
+        printf("Command bools:%d\n", command.bools);
+        printf("NOT armed!! Safe!! :3\n");
+    }
+    return(0);
+}
+
 uint8_t tap_rx(){
 
     /*
@@ -122,16 +108,51 @@ uint8_t tap_rx(){
     if(to_ms_since_boot(get_absolute_time()) - ms_last_rx >= 1000){
         ms_last_rx = to_ms_since_boot(get_absolute_time());
 
-        uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x2E, 0x63, 0xC0, 0x3E, 0x55, 0x8F, 0x00, 0x00, 0x00, 0xF5, 0x42, 0xB4, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x2F, 0xEF, 0xAA, 0x55};
-        tap.deserialize(test_buffer, (uint8_t)tap.outputBuffer[4]+4);
-        return(0);
+        //Direct command example
+        uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x1C, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x91, 0xB7, 0xAA, 0x55};
+
+        //Telemetry example
+        //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x2E, 0x63, 0xC0, 0x3E, 0x55, 0x8F, 0x00, 0x00, 0x00, 0xF5, 0x42, 0xB4, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x2F, 0xEF, 0xAA, 0x55};
+        
+        uint8_t rx_type = 0;
+        uint8_t rx_len = 0;
+        uint8_t rx_buffer[32]; // Allocate memory!
+        tap.deserialize(test_buffer, 32, &rx_type, &rx_len, rx_buffer);
+
+        switch(rx_type) {
+            case TAP::DIRECT_COMMAND: {
+
+/*              DEBUG LINES I HOPE TO NEVER NEED AGAIN OH MY GOD
+                printf("Expected buffer:\n");
+                for (uint8_t i = 8; i < rx_len + 8; i++) {
+                    printf("%02X ", test_buffer[i]);
+                }
+                printf("\n");
+
+                printf("Received buffer:\n");
+                for (uint8_t i = 0; i < rx_len; i++) {
+                    printf("%02X ", rx_buffer[i]);
+                }
+                printf("\n"); */
+
+                TAP::TAP_DIRECT_COMMAND received_direct_command;
+                memcpy(&received_direct_command, rx_buffer, sizeof(TAP::TAP_DIRECT_COMMAND));
+
+                direct_command_worker(received_direct_command);
+                break;
+            }
+            default:
+                break;
+        }
+        return 0;
     }
-    return(1);
+    return 1;
 }
 
 
 // GPIO Initialisation should all happen here pls thx
 int pico_gpio_init(void) {
+
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
     return PICO_OK;

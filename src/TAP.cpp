@@ -171,38 +171,48 @@
 
     //This should be able to fail to detect a correct struct after unraveling the header
     //TODO: Implement COBS decoding!!
-    uint8_t TAP::deserialize(uint8_t *raw_message, uint8_t message_len){
-        //First we determine what kind of header we've received
+    uint8_t TAP::deserialize(uint8_t *raw_message, uint8_t message_len, uint8_t* payload_type_out, uint8_t* payload_len_out, uint8_t* payload_buffer_out){
         TAP::TAP_ADDRESS_HEADER received_header;
+
         memcpy(&received_header, raw_message, sizeof(TAP::TAP_ADDRESS_HEADER));
-        printf("Header type:%d\n", received_header.message_type);
+
+        //This will take the payload out of the full message, and give it back separately.
+        //It also gives back the payload length and the payload type separately
+        //The controller is in charge of identifying the fields within the payload
+
+        uint8_t tap_received_type = 0;
+
         switch(received_header.message_type){
-            case 0:
-                printf("Acknowledgement!\n");
+            case ACK_NACK:
+                tap_received_type = sizeof(TAP_ACK_NACK);
                 break;
-            case 1:
-                printf("Direct command!\n");
+            case DIRECT_COMMAND:
+                tap_received_type = sizeof(TAP_DIRECT_COMMAND);
                 break;
-            case 2:
-                printf("Indirect command!\n");
+            case INDIRECT_COMMAND:
+                tap_received_type = sizeof(TAP_INDIRECT_COMMAND);
                 break;
-            case 16:
-                //"But this is the thing that creates the telemetry data why can it dissect other telemetry"
-                //Because it's the only message we've finished so far. Screw you.
-                printf("Telemetry!\n");
-                printf("Header + Payload length: %d\n", received_header.message_len);
-                TAP_TELEMETRY received_telemetry;
-                memcpy(&received_telemetry, raw_message+sizeof(TAP_ADDRESS_HEADER), received_header.message_len - sizeof(TAP_ADDRESS_HEADER));
-                printf("GPS: %f, %f\n", flipFloatEndianness(received_telemetry.lat), flipFloatEndianness(received_telemetry.lon));
+            case TELEMETRY:
+                tap_received_type = sizeof(TAP_TELEMETRY);
                 break;
-            case 254:
-                printf("Datalink negotiation!\n");
-                break;
-            case 255:
-                printf("Datalink telemetry!\n");
-                break;
+            case NEGOTIATE_DATALINK:
+                //Temporary
+                return(TAP_ERROR_UNSUPPORTED_HEADER);
+            case TELEMETRY_DATALINK:
+                //Temporary
+                return(TAP_ERROR_UNSUPPORTED_HEADER);
             default:
                 return(TAP_ERROR_UNSUPPORTED_HEADER);
+
         }
+
+        if(received_header.message_len-sizeof(TAP_ADDRESS_HEADER) == tap_received_type){
+            *payload_type_out = received_header.message_type;
+            *payload_len_out = received_header.message_len-sizeof(TAP_ADDRESS_HEADER);
+
+            memcpy(payload_buffer_out, raw_message + sizeof(TAP_ADDRESS_HEADER), *payload_len_out);
+            printf("CPP -> Out com bool: %d\n", (uint8_t)payload_buffer_out[2]);
+        }
+
         return(TAP::TAP_OK);
     }
