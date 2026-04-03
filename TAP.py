@@ -16,7 +16,15 @@ class TAP_message:
         self.trailer = TAP_trailer()
         self.length = None
         self.packed_message = None
-        
+        self.packed_header = None
+        self.packed_payload = None
+        self.packed_trailer = None
+
+    def string(self):
+        print(f"Length: {len(self.packed_message)}")
+        print(f"HEADER({len(self.packed_header)}):",' '.join(f'{b:02x}' for b in self.packed_header))
+        print(f"PAYLOAD({len(self.packed_payload)}):",' '.join(f'{b:02x}' for b in self.packed_payload))
+        print(f"TRAILER({len(self.packed_trailer)}):",' '.join(f'{b:02x}' for b in self.packed_trailer))
 
     def calculate_COBS(self):
         SOF_word_big_endian = 0xAA55
@@ -35,28 +43,82 @@ class TAP_message:
             msg[last_cobs_pos+1] = 0x00    
 
         self.packed_message = msg
+        self.packed_header = self.packed_message[0:8]
+        self.packed_payload = self.packed_message[8:-4]
+        self.packed_trailer = self.packed_message[-4:]
 
     def pack_message(self):
-        packed_payload = self.payload.pack_payload()
+        self.packed_payload = self.payload.pack_payload()
         
-        self.header.messageLength = len(packed_payload)
-        
-
-        packed_header = self.header.pack_header()
+        self.header.messageLength = len(self.packed_payload)
         
 
-        self.trailer.calculate_CRC16(packed_header, packed_payload)
+        self.packed_header = self.header.pack_header()
         
 
-        packed_trailer = self.trailer.pack_trailer()
+        self.trailer.calculate_CRC16(self.packed_header, self.packed_payload)
         
-        self.packed_message =  packed_header + packed_payload + packed_trailer
+
+        self.packed_trailer = self.trailer.pack_trailer()
+        
+        self.packed_message =  self.packed_header + self.packed_payload + self.packed_trailer
         self.calculate_COBS()
         return self.packed_message
+    
+    def decode_COBS(self,data):
+        msg = bytearray(data)
+        current_cobs_pos = 0x0006
+        if (msg[current_cobs_pos] << 8 | msg[current_cobs_pos+1]) != 0x0000:
+            print("There is COBS in this message!!")
+            # First one is COBS itself, turn back to 0x0000
+            next_cobs_pos = (msg[current_cobs_pos] << 8 | msg[current_cobs_pos+1])
+            msg[current_cobs_pos] = 0x00
+            msg[current_cobs_pos+1] = 0x00
+            current_cobs_pos = next_cobs_pos
+            while True:
+                print(f"COBS in position:{current_cobs_pos}")
+                next_cobs_pos = (msg[current_cobs_pos] << 8 | msg[current_cobs_pos+1])
+                #These ones have to be turned back to 0xAA55
+                msg[current_cobs_pos] = 0xAA
+                msg[current_cobs_pos+1] = 0x55
+                if next_cobs_pos == 0x0000:
+                    print("No more COBS")
+                    break
+                current_cobs_pos=next_cobs_pos
+                
+        else:
+            print("No COBS, nothing to see here!")
 
-        
+        return msg    
 
+    @classmethod    
+    def unpack(cls,data):
+        COBSless_data = cls.decode_COBS(cls,data)
         
+        packed_header = COBSless_data[0:8]
+        packed_payload = COBSless_data[8:-4]
+        packed_trailer = COBSless_data[-4:]
+        message = cls(None,None,None,None)
+        message.packed_header = packed_header
+        message.packed_payload = packed_payload
+        message.packed_trailer = packed_trailer
+        message.packed_message =  COBSless_data
+        message.length = len(COBSless_data)
+
+        message.header = TAP_header.unpack_header(packed_header)
+        message.trailer = TAP_trailer.unpack_trailer(packed_trailer)
+        assert message.trailer.check_CRC16(message.packed_header,message.packed_payload)
+        
+        if message.header.messageType == TELEMETRY:
+            message.payload = TelemetryPayload.unpack_payload(packed_payload)
+        elif message.header.messageType == TELEMETRY_DATALINK:
+            message.payload = TelemetryDatalink.unpack_payload(packed_payload)
+        #TODO: Add missing payload types
+        return message
+
+
+
+      
 class TAP_header:
     def __init__(self, tID, sID, messageType, messageLength):
         self.SOF = 0xAA55
@@ -80,10 +142,17 @@ class TAP_header:
             self.messageType,  
             self.COBS          
         )
+    @classmethod
+    def unpack_header(cls, packed_data):
+        
+        sof, tID, sID, messageLength, messageType, COBS = struct.unpack(
+            '>HBBBBH', packed_data
+        )
+        return cls(tID,sID,messageType,messageLength)  
 
 class TAP_trailer:
-    def __init__(self):
-        self.CRC16 = None
+    def __init__(self,CRC16=None):
+        self.CRC16 = CRC16
         self.EOF = 0xAA55
 
     def calculate_CRC16(self, header_bytes, payload_bytes):
@@ -92,12 +161,32 @@ class TAP_trailer:
         calculator = Calculator(Crc16.MODBUS)
         self.CRC16 = calculator.checksum(data)
 
+    def check_CRC16(self,header_bytes,payload_bytes):
+        data = header_bytes + payload_bytes
+        calculator = Calculator(Crc16.MODBUS)
+        calculated_crc = calculator.checksum(data)
+    
+        if self.CRC16 != calculated_crc:
+            raise ValueError(f"CRC mismatch! Expected {calculated_crc:04x}, got {self.CRC16:04x}")
+    
+        print(f"CRC16 verified: {calculated_crc:04x}")
+        return True
+    
     def pack_trailer(self):
 
         return struct.pack('>HH',
             self.CRC16,
             self.EOF
         )
+    
+    @classmethod
+    def unpack_trailer(cls, packed_data):
+        
+        CRC16, EOF = struct.unpack(
+            '>HH', packed_data
+        )
+        return cls(CRC16)  
+
 
 class TelemetryPayload:
     def __init__(self, lat, lon, alt, heading, roll, pitch):
@@ -117,8 +206,43 @@ class TelemetryPayload:
             self.roll,  
             self.pitch          
         )
+    
+    @classmethod
+    def unpack_payload(cls, packed_data):
+        
+        lat, lon, alt, heading, roll, pitch = struct.unpack(
+            '>ffHhff', packed_data
+        )
+        return cls(lat, lon, alt, heading, roll, pitch)  
 
+class TelemetryDatalink:
+    def __init__(self, RSSI, SNR, RTT, SENT_PKTS, DELTA_T):
+        self.RSSI = RSSI
+        self.SNR = SNR
+        self.RTT = RTT
+        self.SENT_PKTS = SENT_PKTS
+        self.DELTA_T = DELTA_T
+        self.reserved = 0x0000
 
+    def pack_payload(self):
+        return struct.pack('>hHHHHH',
+            self.RSSI,
+            self.SNR,
+            self.RTT,
+            self.SENT_PKTS,
+            self.DELTA_T,
+            self.reserved
+        )
+    
+    @classmethod
+    def unpack_payload(cls, packed_data):
+        
+        RSSI, SNR, RTT, SENT_PKTS, DELTA_T, reserved = struct.unpack(
+            '>hHHHHH', packed_data
+        )
+        return cls(RSSI,SNR,RTT,SENT_PKTS,DELTA_T,reserved)  
+
+                
 
 # THIS IS TURBO AI SLOP
 CRC16 = 0xA001  # Assuming standard CRC-16 poly, adjust if different
