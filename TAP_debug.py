@@ -1,4 +1,4 @@
-#v2026.04b
+#v2026.04c
 import serial
 import time
 import logging
@@ -147,7 +147,7 @@ class TAP_CLI:
             elif check == "n":
                 break
         
-        return TAP.DirectCommandPayload(bools,values)
+        return TAP.DirectCommandPayload(bits,bools,values)
             
 
     #def create_indirect_command_payload(self):
@@ -172,7 +172,7 @@ class TAP_CLI:
 def main():
 
     #Print top ASCII
-    print("---------------------- TAP Debug Tool v2026.04a ----------------------")
+    print("---------------------- TAP Debug Tool v2026.04c ----------------------")
     
     serial_device = input("Select serial device - Default: /dev/ttyACM0:")
     if serial_device == "":
@@ -211,16 +211,17 @@ def send(serial_device,baudrate,timeout):
     #Init serial device
     tap_cli = TAP_CLI(port=serial_device,baudrate=baudrate,timeout=timeout)
     
-    while True: 
-        tap_message = tap_cli.create_TAP_message()
-        full_packet = tap_message.pack_message()
-        tap_message.string()
-        #tap_cli.send_TAP_message(tap_message.pack_message())
-        #tap_payload = TAP.TelemetryPayload(43.323228,-3.017115,0xAA55,245,90,90)
-        #tap_message = TAP.TAP_message(0x02,0x01,TAP.TELEMETRY,tap_payload)
+    #while True: 
+        #tap_message = tap_cli.create_TAP_message()
         #full_packet = tap_message.pack_message()
 
-    
+        #tap_cli.send_TAP_message(tap_message.pack_message())
+    tap_payload = TAP.TelemetryPayload(43.323228,-3.017115,33,245,90,90)
+    tap_message = TAP.TAP_message(0x02,0x01,TAP.TELEMETRY,tap_payload)
+    #full_packet = tap_message.pack_message()
+    tap_message.string()
+    tap_message.object_string()
+
 
 
 

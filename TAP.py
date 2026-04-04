@@ -8,6 +8,23 @@ TELEMETRY = 0x10
 NEGOTIATE_DATALINK = 0xFE
 TELEMETRY_DATALINK = 0xFF
 
+def message_type_hex_to_str(type_hex):
+    match type_hex:
+        case 0x00:
+            return "ACK"
+        case 0x01:
+            return "DIRECT_COMMAND"
+        case 0x02:
+            return "INDIRECT_COMMAND"
+        case 0x10:
+            return "TELEMETRY"
+        case 0xFE:
+            return "NEGOTIATE_DATALINK"
+        case 0xFF:
+            return "TELEMETRY_DATALINK"
+        case _:
+            return "Unknown payload type"
+
 
 class TAP_message:
     def __init__(self, tID, sID, messageType, payload):
@@ -19,12 +36,24 @@ class TAP_message:
         self.packed_header = None
         self.packed_payload = None
         self.packed_trailer = None
+        self.pack_message()
 
     def string(self):
+        print("")
         print(f"Length: {len(self.packed_message)}")
         print(f"HEADER({len(self.packed_header)}):",' '.join(f'{b:02x}' for b in self.packed_header))
         print(f"PAYLOAD({len(self.packed_payload)}):",' '.join(f'{b:02x}' for b in self.packed_payload))
         print(f"TRAILER({len(self.packed_trailer)}):",' '.join(f'{b:02x}' for b in self.packed_trailer))
+        print("")
+
+
+    def object_string(self):
+        self.header.object_string()
+        print("")
+        self.payload.object_string()
+        print("")
+        self.trailer.object_string()
+        print("")
 
     def calculate_COBS(self):
         SOF_word_big_endian = 0xAA55
@@ -155,6 +184,17 @@ class TAP_header:
             '>HBBBBH', packed_data
         )
         return cls(tID,sID,messageType,messageLength)  
+    
+    def object_string(self):
+        print("TAP header:")
+        print(f"SOF:{hex(self.SOF)}")
+        print(f"tID:0x{self.tID:02x}({self.tID})")
+        print(f"sID:0x{self.sID:02x}({self.sID})")
+        print(f"Message Type:0x{self.messageType:02x}({message_type_hex_to_str(self.messageType)})")
+        print(f"Message Lenght:{hex(self.messageLength)}")
+        print(f"COBS:0x{self.COBS:02x}")
+
+
 
 class TAP_trailer:
     def __init__(self,CRC16=None):
@@ -194,6 +234,12 @@ class TAP_trailer:
             '>HH', packed_data
         )
         return cls(CRC16)  
+    
+    def object_string(self):
+        print("TAP trailer:")
+        print(f"CRC:{hex(self.CRC16)}")
+        print(f"EOF:{hex(self.EOF)}")
+        
 
 
 class TelemetryPayload:
@@ -223,9 +269,19 @@ class TelemetryPayload:
         )
         return cls(lat, lon, alt, heading, roll, pitch)  
     
+    def object_string(self):
+        print("Telemetry Payload:")
+        print(f"Latitude: 0x{struct.pack('>f', self.lat).hex()} ({self.lat})")
+        print(f"Longitude: 0x{struct.pack('>f', self.lon).hex()} ({self.lon})")
+        print(f"Altitude: 0x{struct.pack('>H', self.alt).hex()} ({self.alt})")
+        print(f"Heading: 0x{struct.pack('>h', self.heading).hex()} ({self.heading})")
+        print(f"Roll: 0x{struct.pack('>f', self.roll).hex()} ({self.roll})")
+        print(f"Pitch: 0x{struct.pack('>f', self.pitch).hex()} ({self.pitch})")
+
+    
 class DirectCommandPayload:
     MAX_SIGNAL_COUNT = 8
-    def __init__(self, bools,values):
+    def __init__(self, flags, bools, values):
         if values is None:
             values = []
         if len(values) > self.MAX_SIGNAL_COUNT:
@@ -234,6 +290,7 @@ class DirectCommandPayload:
         for i in range(len(self.values),self.MAX_SIGNAL_COUNT):
             self.values.append(0x0000)
         self.bools = bools 
+        self.flags =flags
     
     def pack_payload(self):
         count = len(self.values)
@@ -251,7 +308,39 @@ class DirectCommandPayload:
         fmt = f'>{"H"*count}'
         bools = struct.unpack('>H', packed_data[:2])
         values = list(struct.unpack(fmt, packed_data[4:]))
-        return cls(bools, values)
+
+        bits = [(bools >> (15 - i)) & 1 for i in range(16)]
+        
+        flags = {
+            'ARM': bits[0],
+            'AUTO': bits[1], 
+            'STAB': bits[2],
+            'NAVLIGHT': bits[3],
+            'STROBE': bits[4],
+            'LAND': bits[5],
+            'COMLOSSBY': bits[11],
+            'LOITER': bits[12],
+            'RTH': bits[13]
+        }
+
+        return cls(flags, bools, values)
+    
+    def object_string(self):
+        print("Direct Command Payload:")
+        print(f"Flags: 0x{self.bools:04x}({self.bools})")
+        
+        bits = [(self.bools >> (15 - i)) & 1 for i in range(16)]
+        flag_names = ['ARM', 'AUTO', 'STAB', 'NAVLIGHT', 'STROBE', 'LAND', 
+                    '', '', '', '', '', '', 'COMLOSSBY', 'LOITER', 'RTH']
+        
+        for i, name in enumerate(flag_names):
+            if name:  # Only print named flags
+                status = 'y' if bits[i] else 'n'
+                print(f"{name:<10}: {status} (bit {i})")
+
+        for i in range(0,len(self.values)):
+            print(f"Channel {i} command: {hex(self.values[i])}({self.values[i]})")
+        
         
 
 class TelemetryDatalink:
@@ -280,6 +369,15 @@ class TelemetryDatalink:
             '>hHHHHH', packed_data
         )
         return cls(RSSI,SNR,RTT,SENT_PKTS,DELTA_T,reserved)  
+    
+    def object_string(self):
+        print("Telemetry Datalink Payload:")
+        print(f"RSSI:{self.RSSI}({hex(self.RSSI)})")
+        print(f"SNR:{self.SNR}({hex(self.SNR)})")
+        print(f"RTT:{self.RTT}({hex(self.RTT)})")
+        print(f"SENT_PKTS:{self.SENT_PKTS}({hex(self.SENT_PKTS)})")
+        print(f"DELTA_T:{self.DELTA_T}({hex(self.DELTA_T)})")
+        print(f"Reserved:{self.reserved}({hex(self.reserved)})")
 
                 
 
