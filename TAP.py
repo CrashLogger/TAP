@@ -1,4 +1,4 @@
-import struct, logging
+import struct
 from crc import Calculator,Crc16
 
 ACK = 0x00
@@ -36,7 +36,8 @@ class TAP_message:
         self.packed_header = None
         self.packed_payload = None
         self.packed_trailer = None
-        self.pack_message()
+        if (self.header is not None) and (self.payload is not None) and (self.trailer is not None): 
+            self.pack_message()
 
     def string(self):
         print("")
@@ -47,6 +48,18 @@ class TAP_message:
         print(f"TRAILER({len(self.packed_trailer)}):",' '.join(f'{b:02x}' for b in self.packed_trailer))
         print("")
 
+    def debug(self):
+        lines = []
+        lines.append("")
+        lines.append(f"Length: {len(self.packed_message)}")
+        lines.append(f"HEADER({len(self.packed_header)}): {' '.join(f'{b:02x}' for b in self.packed_header)}")
+        if self.payload is not None:
+            lines.append(f"PAYLOAD({len(self.packed_payload)}): {' '.join(f'{b:02x}' for b in self.packed_payload)}")
+        lines.append(f"TRAILER({len(self.packed_trailer)}): {' '.join(f'{b:02x}' for b in self.packed_trailer)}")
+        lines.append("")
+        
+        return '\n'.join(lines)
+
 
     def object_string(self):
         self.header.object_string()
@@ -56,6 +69,23 @@ class TAP_message:
         print("")
         self.trailer.object_string()
         print("")
+
+    def object_debug(self):
+        lines = []
+
+        lines.extend(self.header.object_debug().splitlines())
+        lines.append("") 
+        
+        if self.payload is not None:
+            lines.extend(self.payload.object_debug().splitlines())
+            lines.append("") 
+        
+        lines.extend(self.trailer.object_debug().splitlines())
+        lines.append("") 
+        
+        output = '\n'.join(lines)
+        
+        return output
 
     def calculate_COBS(self):
         SOF_word_big_endian = 0xAA55
@@ -203,6 +233,19 @@ class TAP_header:
         print(f"Message Length:{hex(self.messageLength)}")
         print(f"COBS:0x{self.COBS:02x}")
 
+    def object_debug(self):
+        lines = []
+        lines.append("TAP header:")
+        lines.append(f"SOF:{hex(self.SOF)}")
+        lines.append(f"tID:0x{self.tID:02x}({self.tID})")
+        lines.append(f"sID:0x{self.sID:02x}({self.sID})")
+        lines.append(f"Message Type:0x{self.messageType:02x}({message_type_hex_to_str(self.messageType)})")
+        lines.append(f"Message Length:{hex(self.messageLength)}")
+        lines.append(f"COBS:0x{self.COBS:02x}")
+
+        output = '\n'.join(lines)
+        return output
+
 
 
 class TAP_trailer:
@@ -252,6 +295,14 @@ class TAP_trailer:
         print("TAP trailer:")
         print(f"CRC:{hex(self.CRC16)}")
         print(f"EOF:{hex(self.EOF)}")
+
+    def object_debug(self):
+        lines = []
+        lines.append("TAP trailer:")
+        lines.append(f"CRC:{hex(self.CRC16)}")
+        lines.append(f"EOF:{hex(self.EOF)}")
+        output = '\n'.join(lines)
+        return output
         
 
 
@@ -291,6 +342,18 @@ class TelemetryPayload:
         print(f"Roll: 0x{struct.pack('>f', self.roll).hex()} ({self.roll})")
         print(f"Pitch: 0x{struct.pack('>f', self.pitch).hex()} ({self.pitch})")
 
+    def object_debug(self):
+        lines = []
+        lines.append("Telemetry Payload:")
+        lines.append(f"Latitude: 0x{struct.pack('>f', self.lat).hex()} ({self.lat})")
+        lines.append(f"Longitude: 0x{struct.pack('>f', self.lon).hex()} ({self.lon})")
+        lines.append(f"Altitude: 0x{struct.pack('>H', self.alt).hex()} ({self.alt})")
+        lines.append(f"Heading: 0x{struct.pack('>h', self.heading).hex()} ({self.heading})")
+        lines.append(f"Roll: 0x{struct.pack('>f', self.roll).hex()} ({self.roll})")
+        lines.append(f"Pitch: 0x{struct.pack('>f', self.pitch).hex()} ({self.pitch})")
+        output = '\n'.join(lines)
+        return output
+
 class BooleanArray:
     def __init__(self):
         self.bits = None #16 bit array
@@ -313,6 +376,18 @@ class BooleanArray:
             if name:  # Only print named flags
                 status = 'y' if self.bits[i] else 'n'
                 print(f"{name:<10}: {status} (bit {i})")
+
+    def print_array_debug(self):
+        lines = []
+        flag_names = ['ARM', 'AUTO', 'STAB', 'NAVLIGHT', 'STROBE', 'LAND', 
+                    '', '', '', '', '', '', 'COMLOSSBY', 'LOITER', 'RTH']
+        
+        for i, name in enumerate(flag_names):
+            if name:  # Only print named flags
+                status = 'y' if self.bits[i] else 'n'
+                lines.append(f"{name:<10}: {status} (bit {i})")
+        output = '\n'.join(lines)
+        return output
 
 
 
@@ -338,14 +413,12 @@ class DirectCommandPayload:
             0x0000,
             *self.channels
             )
-    
+    @classmethod
     def unpack_payload(cls,packed_data):
         if len(packed_data) < 1:
             raise ValueError("Payload too short")
-        count = len(packed_data)/2
-        fmt = f'>{"H"*count}'
-        bools = struct.unpack('>H', packed_data[:2])
-        channels = list(struct.unpack(fmt, packed_data[4:]))
+        bools = struct.unpack('>H', packed_data[:2])[0]
+        channels = list(struct.unpack('>HHHHHHHH', packed_data[4:]))
         return cls(bools, channels)
     
     def object_string(self):
@@ -354,6 +427,16 @@ class DirectCommandPayload:
         self.booleanArray.print_array()
         for i in range(0,len(self.channels)):
             print(f"Channel {i} command: {hex(self.channels[i])}({self.channels[i]})")
+    
+    def object_debug(self):
+        lines = []
+        lines.append("Direct Command Payload:")
+        lines.append(f"Flags: 0x{self.booleanArray.bools:04x}({self.booleanArray.bools})")
+        lines.extend(self.booleanArray.print_array_debug().splitlines())
+        for i in range(0,len(self.channels)):
+            lines.append(f"Channel {i} command: {hex(self.channels[i])}({self.channels[i]})")
+        output = '\n'.join(lines)
+        return output
         
 class IndirectCommandPayload:
     def __init__(self, bools, gps_lat, gps_lon, alt, rad):
@@ -375,16 +458,18 @@ class IndirectCommandPayload:
             self.alt,
             self.rad
             )
-    
+
+    @classmethod    
     def unpack_payload(cls,packed_data):
         if len(packed_data) < 1:
             raise ValueError("Payload too short")
 
-        bools = struct.unpack('>H', packed_data[:2])
+        bools = struct.unpack('>H', packed_data[:2])[0]
         gps_lat, gps_lon, alt, rad = list(struct.unpack('>ffHH', packed_data[4:]))
         return cls(bools, gps_lat, gps_lon, alt, rad)
     
     def object_string(self):
+        
         print("Indirect Command Payload:")
         print(f"Flags: 0x{self.booleanArray.bools:04x}({self.booleanArray.bools})")
         self.booleanArray.print_array()
@@ -392,6 +477,19 @@ class IndirectCommandPayload:
         print(f"Waypoint Longitude: 0x{struct.pack('>f', self.gps_lon).hex()} ({self.gps_lon})")
         print(f"Waypoint Altitude/Depth: 0x{struct.pack('>H', self.alt).hex()} ({self.alt})")
         print(f"Waypoint Precission Radius: 0x{struct.pack('>H', self.rad).hex()} ({self.rad})")
+
+    
+    def object_debug(self):
+        lines = []
+        lines.append("Indirect Command Payload:")
+        lines.append(f"Flags: 0x{self.booleanArray.bools:04x}({self.booleanArray.bools})")
+        lines.append(self.booleanArray.print_array_debug().splitlines())
+        lines.append(f"Waypoint Latitude: 0x{struct.pack('>f', self.gps_lat).hex()} ({self.gps_lat})")
+        lines.append(f"Waypoint Longitude: 0x{struct.pack('>f', self.gps_lon).hex()} ({self.gps_lon})")
+        lines.append(f"Waypoint Altitude/Depth: 0x{struct.pack('>H', self.alt).hex()} ({self.alt})")
+        lines.append(f"Waypoint Precission Radius: 0x{struct.pack('>H', self.rad).hex()} ({self.rad})")
+        output = '\n'.join(lines)
+        return output
 
 
 
@@ -420,7 +518,7 @@ class TelemetryDatalinkPayload:
         RSSI, SNR, RTT, SENT_PKTS, DELTA_T, reserved = struct.unpack(
             '>hHHHHH', packed_data
         )
-        return cls(RSSI,SNR,RTT,SENT_PKTS,DELTA_T,reserved)  
+        return cls(RSSI,SNR,RTT,SENT_PKTS,DELTA_T)  
     
     def object_string(self):
         print("Telemetry Datalink Payload:")
@@ -430,3 +528,15 @@ class TelemetryDatalinkPayload:
         print(f"SENT_PKTS:0x{self.SENT_PKTS:04x}({self.SENT_PKTS})")
         print(f"DELTA_T:0x{self.DELTA_T:04x}({self.DELTA_T})")
         print(f"Reserved:0x{self.reserved:04x}({self.reserved})")
+
+    def object_debug(self):
+        lines = []
+        lines.append("Telemetry Datalink Payload:")
+        lines.append(f"RSSI:0x{struct.pack('>h', self.RSSI).hex()}({self.RSSI})") #Signed int, simple method simply doesn't cut it
+        lines.append(f"SNR:0x{self.SNR:04x}({self.SNR})")
+        lines.append(f"RTT:0x{self.RTT:04x}({self.RTT})")
+        lines.append(f"SENT_PKTS:0x{self.SENT_PKTS:04x}({self.SENT_PKTS})")
+        lines.append(f"DELTA_T:0x{self.DELTA_T:04x}({self.DELTA_T})")
+        lines.append(f"Reserved:0x{self.reserved:04x}({self.reserved})")
+        output = '\n'.join(lines)
+        return output

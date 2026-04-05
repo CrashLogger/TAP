@@ -1,25 +1,31 @@
 #v2026.04c
-import serial
-import time
-import logging
-import struct
-import TAP
+import serial, time, logging, TAP, traceback
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s:[%(levelname)s]:%(message)s',  # Clean format
+    datefmt='%H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
 class TAP_CLI:
     def __init__(self, port, baudrate, timeout):
         if port is None:
             self.serial = None
         else:
-            print("Serial is temporarily disabled")
-            #self.serial = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
+            #print("Serial is temporarily disabled")
+            self.serial = serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
 
     def read_TAP_message(self):
         buffer = bytearray()
 
         while True:
             if self.serial.in_waiting > 0:
+                logger.info("Message received")
                 chunk_size = min(255,self.serial.in_waiting)
                 chunk = self.serial.read(chunk_size)
+                if not chunk:  
+                    break
                 buffer.extend(chunk)
 
             if len(buffer) >2 and buffer[-2:] == b'\xAA\x55':
@@ -222,6 +228,7 @@ class TAP_CLI:
         pitch = float(input("Pitch:"))
 
         return TAP.TelemetryPayload(lat,lon,alt,heading,roll,pitch)
+    
     #def create_negotiate_datalink_payload(self):
 
     def create_telemetry_datalink_payload(self):
@@ -283,16 +290,9 @@ def send(serial_device,baudrate,timeout):
     
     while True: 
         tap_message = tap_cli.create_TAP_message()
-
-        #tap_cli.send_TAP_message(tap_message.pack_message())
-        #tap_payload = TAP.TelemetryPayload(43.323228,-3.017115,33,245,90,90)
-        #tap_message = TAP.TAP_message(0x02,0x01,TAP.TELEMETRY,tap_payload)
-
-        tap_message.string()
-        tap_message.object_string()
-
-
-
+        logger.debug(f"Message Bytes:\n{tap_message.debug()}")
+        logger.debug(f"Message Fields:\n{tap_message.object_debug()}")
+        tap_cli.send_TAP_message(tap_message.packed_message)
 
 
 def monitor(serial_device,baudrate,timeout):
@@ -304,11 +304,13 @@ def monitor(serial_device,baudrate,timeout):
     #Infinite loop to monitor incoming messages
     while True:
         try:
-            TAP_msg = tap_cli.read_TAP_message()
-            TAP_msg.string()
+            tap_message = tap_cli.read_TAP_message()
+            logger.debug(f"Message Bytes:\n{tap_message.debug()}")
+            logger.debug(f"Message Fields:\n{tap_message.object_debug()}")
 
         except Exception as e:
             print(f"Read error: {e}")
+            traceback.print_exc()
             continue
     
 
