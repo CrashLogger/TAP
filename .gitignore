@@ -39,3 +39,7 @@
 
 # debug information files
 *.dwo
+
+# RPI Pico builds
+*build
+build/*

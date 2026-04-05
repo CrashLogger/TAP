@@ -16,7 +16,7 @@
         messages_since_last_datalink_telem = 0;
     }
 
-    uint8_t TAP::serialize(const TAP_ADDRESS_HEADER *header, const void *payload, TAP_TRAILER *trailer, uint8_t *buffer, uint8_t max_len) {
+    uint8_t TAP::serialize(const TAP_ADDRESS_HEADER *header, const void *payload, uint8_t *buffer, uint8_t max_len) {
         if (header->message_len + sizeof(TAP_ADDRESS_HEADER) + sizeof(TAP_TRAILER) > max_len) {
             //Too big for the allowed size!
             return TAP_ERROR_INVALID_LENGTH;
@@ -35,12 +35,9 @@
         //We run the CRC check for the header and the payload, but not the trailer.
         //I mean... obviously. It is impossible to CRC check a CRC value. It would change every time we run CRC on it!
         //The crc_16 function returns the crc_16 value in BIG ENDIAN already!!
-        trailer->crc_16 = crc_16(buffer, offset);
-
-        // Serialize trailer, if one was provided (it should be!)
-        if (trailer) {
-            memcpy(buffer + offset, trailer, sizeof(TAP_TRAILER));
-        }
+        TAP::TAP_TRAILER trailer;
+        trailer.crc_16 = crc_16(buffer, offset);
+        memcpy(buffer + offset, &trailer, sizeof(TAP_TRAILER));
 
         uint16_t full_byte_length = offset + sizeof(TAP_TRAILER);
 
@@ -123,7 +120,6 @@
     uint8_t TAP::tapSendTelem(const TAP_TELEMETRY &telemetry) {
         uint8_t buffer[255];
         TAP::TAP_ADDRESS_HEADER header;
-        TAP::TAP_TRAILER trailer;
         header.target_id = TAP::target_id;
         header.source_id = TAP::source_id;
         header.sof_word = __builtin_bswap16(TAP_SOF_WORD);
@@ -141,15 +137,38 @@
         telemetry_copy.pitch = flipFloatEndianness(telemetry.pitch);
         telemetry_copy.roll = flipFloatEndianness(telemetry.roll);
 
-        //The CRC field gets handled by the serializer!!
-        trailer.eof_word = __builtin_bswap16(TAP_SOF_WORD);
-
-        uint8_t len = serialize(&header, &telemetry_copy, &trailer, buffer, sizeof(buffer));
+        uint8_t len = serialize(&header, &telemetry_copy, buffer, sizeof(buffer));
         if (len == 0) return TAP::TAP_ERROR_INVALID_LENGTH;
 
-        for (uint8_t i = 0; i < len; i++) {
+        txMit(buffer, sizeof(TAP_ADDRESS_HEADER) + sizeof(TAP_TELEMETRY) + sizeof(TAP_TRAILER));
 
-            printf("%02X ", buffer[i]);
+        messages_since_last_datalink_telem ++;
+        return TAP_OK;
+    }
+
+    uint8_t TAP::tapACK(uint8_t typeOfAck){
+        
+        TAP::TAP_ADDRESS_HEADER header;
+        header.target_id = TAP::target_id;
+        header.source_id = TAP::source_id;
+        header.sof_word = __builtin_bswap16(TAP_SOF_WORD);
+        header.message_type = ACK_NACK;
+        header.message_len = sizeof(TAP_ACK_NACK);
+
+        TAP_ACK_NACK ack;
+        ack.ack_type = typeOfAck;
+
+        uint8_t buffer[255];
+
+        serialize(&header, &ack, buffer, sizeof(buffer));
+        txMit(buffer, sizeof(TAP_ADDRESS_HEADER) + sizeof(TAP_ACK_NACK) + sizeof(TAP_TRAILER));
+        return(TAP::TAP_OK);
+    }
+
+    uint8_t TAP::txMit(uint8_t* message, uint16_t message_len){
+        for (uint8_t i = 0; i < message_len; i++) {
+
+            printf("%02X ", message[i]);
 
             //Keep in mind, uart1 is for the GPS module!
             //Also remember to set the UART port instead of the USB port in the CmakeLists.txt file!
@@ -161,11 +180,8 @@
             
         }
         printf("\t\n");
-
-        messages_since_last_datalink_telem ++;
-        return TAP_OK;
+        return(TAP::TAP_OK);
     }
-
 
     //Puts a float into a uint32
     //Flips the endianness

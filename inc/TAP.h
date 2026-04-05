@@ -179,13 +179,20 @@ class TAP{
     // ========================================================================================
     //Methods
 
-    uint8_t tapInit(uint8_t source_id);
+    //Setter for changing the target address. Probably not necessary yet but... eh.
+    uint8_t setTarget(uint8_t target_id){
+        TAP::target_id = target_id;
+        return(TAP_OK);
+    }
 
     //"Async"-ly gather telemetry data and send a telemetry packet
     uint8_t tapSendTelem(const TAP_TELEMETRY &telemetry);
 
+    uint8_t tapACK(uint8_t typeOfAck);
+    uint8_t tapACK(uint8_t typeOfAck, uint8_t* token);
+
     //This should always serialize, no matter what it is given
-    uint8_t serialize(const TAP_ADDRESS_HEADER *header, const void *payload, TAP_TRAILER *trailer, uint8_t *buffer, uint8_t max_len);
+    uint8_t serialize(const TAP_ADDRESS_HEADER *header, const void *payload, uint8_t *buffer, uint8_t max_len);
 
     //This should be able to fail to detect a correct struct after unraveling the header
     uint8_t deserialize(uint8_t *raw_message, uint8_t message_len, uint8_t* payload_type_out, uint8_t* payload_len_out, uint8_t* payload_buffer_out);
@@ -208,6 +215,8 @@ class TAP{
     uint8_t tapCobs(uint8_t* message, uint16_t message_len);
 
     uint8_t tapUnCobs(uint8_t* message, uint16_t message_len);
+
+    uint8_t txMit(uint8_t* message, uint16_t message_len);
 
     float flipFloatEndianness(float f);
 
