@@ -1,6 +1,17 @@
 # pragma once
 #include <cstdint>
 
+//It is dangerous to go alone
+//Take this!
+/*
+    printf("Full message printer:\n");
+
+    for(uint16_t i = 0; i<message_len; i++){
+        printf("%02X ", message[i]);
+    }
+    printf("\n");
+
+*/
 class TAP{
 
     public:
@@ -53,6 +64,9 @@ class TAP{
 
         The higher the number of the pragma value, the fewer clock cycles the CPU needs to read longer variables.
         Use carefully!
+
+        Also using anything other than pragma push 1 will make using memcpy an absolute pain in the ass.
+        Fair warning.
     */
 
     public:
@@ -192,6 +206,8 @@ class TAP{
     uint16_t crc_16(uint8_t* message, uint16_t message_len);
 
     uint8_t tapCobs(uint8_t* message, uint16_t message_len);
+
+    uint8_t tapUnCobs(uint8_t* message, uint16_t message_len);
 
     float flipFloatEndianness(float f);
 

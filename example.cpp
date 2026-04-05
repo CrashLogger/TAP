@@ -71,13 +71,13 @@ uint8_t tap_telemetry(){
 
         // Use these for somewhat realistic values!
         //telem.alt = 50;
-        telem.heading = 245;
+        //telem.heading = 200;
         telem.pitch = 90.0;
-        telem.roll = 90.0;
+        telem.roll = 45.0;
 
         // Use these to check if COBS works!
         telem.alt = 0xAA55;
-        //telem.heading = 0xAA55;
+        telem.heading = 0xAA55;
 
         tap.tapSendTelem(telem);
         return(0);
@@ -86,13 +86,26 @@ uint8_t tap_telemetry(){
 }
 
 uint8_t direct_command_worker(TAP::TAP_DIRECT_COMMAND command){
+    
+    //There HAS got to be a better way of doing this
+    command.bools = __builtin_bswap16(command.bools);
+
+    command.channel_0 = __builtin_bswap16(command.channel_0);
+    command.channel_1 = __builtin_bswap16(command.channel_1);
+    command.channel_2 = __builtin_bswap16(command.channel_2);
+    command.channel_3 = __builtin_bswap16(command.channel_3);
+    command.channel_4 = __builtin_bswap16(command.channel_4);
+    command.channel_5 = __builtin_bswap16(command.channel_5);
+    command.channel_6 = __builtin_bswap16(command.channel_6);
+    command.channel_7 = __builtin_bswap16(command.channel_7);
+
     //Check if the armed bit is high
     if(command.bools > 0x8000){
         printf("Armed!\n");
         printf("Motor(s) going BRRRRRRRRR at: %d speed!!\n", command.channel_0);
     }
     else{
-        printf("Command bools:%d\n", command.bools);
+        printf("Command bools:%d\n", (command.bools));
         printf("NOT armed!! Safe!! :3\n");
     }
     return(0);
@@ -109,31 +122,31 @@ uint8_t tap_rx(){
         ms_last_rx = to_ms_since_boot(get_absolute_time());
 
         //Direct command example
-        uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x1C, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x91, 0xB7, 0xAA, 0x55};
-
+        //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x1C, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x91, 0xB7, 0xAA, 0x55};
+        
+        //Direct command example from Gaizka's code
+        uint8_t test_buffer[32] = {0xAA, 0x55, 0x21, 0x2C, 0x14, 0x01, 0x00, 0x00, 0xE0, 0x1C, 0x00, 0x00, 0x38, 0x51, 0x54, 0x7A, 0x70, 0xA3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x76, 0x12, 0xAA, 0x55};
         //Telemetry example
         //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x2E, 0x63, 0xC0, 0x3E, 0x55, 0x8F, 0x00, 0x00, 0x00, 0xF5, 0x42, 0xB4, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x2F, 0xEF, 0xAA, 0x55};
         
+        //Telemetry example, single COBS field
+        //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x4A, 0xFC, 0xC0, 0x41, 0x18, 0x6A, 0x00, 0x00, 0x00, 0xC8, 0x42, 0x34, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x76, 0x62, 0xAA, 0x55};
+
+        //Telemetry example, two COBS fields
+        //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x4A, 0xFC, 0xC0, 0x41, 0x18, 0x6A, 0x00, 0x12, 0x00, 0x00, 0x42, 0x34, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x42, 0xB0, 0xAA, 0x55};
+
         uint8_t rx_type = 0;
         uint8_t rx_len = 0;
         uint8_t rx_buffer[32]; // Allocate memory!
-        tap.deserialize(test_buffer, 32, &rx_type, &rx_len, rx_buffer);
+
+        uint8_t deserialize_result = tap.deserialize(test_buffer, 32, &rx_type, &rx_len, rx_buffer);
+        if(deserialize_result != tap.TAP_OK){
+            printf("OI YOU WERE NOT SUPPOSED TO DO THAT!\n");
+            return(1);
+        }
 
         switch(rx_type) {
             case TAP::DIRECT_COMMAND: {
-
-/*              DEBUG LINES I HOPE TO NEVER NEED AGAIN OH MY GOD
-                printf("Expected buffer:\n");
-                for (uint8_t i = 8; i < rx_len + 8; i++) {
-                    printf("%02X ", test_buffer[i]);
-                }
-                printf("\n");
-
-                printf("Received buffer:\n");
-                for (uint8_t i = 0; i < rx_len; i++) {
-                    printf("%02X ", rx_buffer[i]);
-                }
-                printf("\n"); */
 
                 TAP::TAP_DIRECT_COMMAND received_direct_command;
                 memcpy(&received_direct_command, rx_buffer, sizeof(TAP::TAP_DIRECT_COMMAND));

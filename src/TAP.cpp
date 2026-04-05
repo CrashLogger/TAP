@@ -22,6 +22,7 @@
             return TAP_ERROR_INVALID_LENGTH;
         }
         TAP_ADDRESS_HEADER header_copy = *header;
+        header_copy.sof_word = TAP::TAP_SOF_WORD;
         header_copy.cobs = 0x0000;
         // Serialize header
         memcpy(buffer, &header_copy, sizeof(TAP_ADDRESS_HEADER));
@@ -33,6 +34,7 @@
 
         //We run the CRC check for the header and the payload, but not the trailer.
         //I mean... obviously. It is impossible to CRC check a CRC value. It would change every time we run CRC on it!
+        //The crc_16 function returns the crc_16 value in BIG ENDIAN already!!
         trailer->crc_16 = crc_16(buffer, offset);
 
         // Serialize trailer, if one was provided (it should be!)
@@ -85,6 +87,13 @@
 
     uint8_t TAP::tapCobs(uint8_t* message, uint16_t message_len){
         //COBS
+
+/*         printf("TapCobs received:\n");
+        for(uint16_t i = 0; i<message_len; i++){
+            printf("%02X ", message[i]);
+        }
+        printf("\n"); */
+
         uint16_t cobs_last_filed_pos = 0x0006;
         //We don't let it check the first or last two bytes of the message because WE KNOW those have the SOF_WORD and we WANT them to have the SOF_WORD
         for(uint16_t i = 2; i<(message_len-2); i++){
@@ -132,6 +141,7 @@
         telemetry_copy.pitch = flipFloatEndianness(telemetry.pitch);
         telemetry_copy.roll = flipFloatEndianness(telemetry.roll);
 
+        //The CRC field gets handled by the serializer!!
         trailer.eof_word = __builtin_bswap16(TAP_SOF_WORD);
 
         uint8_t len = serialize(&header, &telemetry_copy, &trailer, buffer, sizeof(buffer));
@@ -173,46 +183,49 @@
     //TODO: Implement COBS decoding!!
     uint8_t TAP::deserialize(uint8_t *raw_message, uint8_t message_len, uint8_t* payload_type_out, uint8_t* payload_len_out, uint8_t* payload_buffer_out){
         TAP::TAP_ADDRESS_HEADER received_header;
+        TAP::TAP_TRAILER received_trailer;
 
         memcpy(&received_header, raw_message, sizeof(TAP::TAP_ADDRESS_HEADER));
+        memcpy(&received_trailer, raw_message + sizeof(TAP::TAP_ADDRESS_HEADER) + received_header.message_len, sizeof(TAP::TAP_TRAILER));
 
         //This will take the payload out of the full message, and give it back separately.
         //It also gives back the payload length and the payload type separately
         //The controller is in charge of identifying the fields within the payload
 
-        uint8_t tap_received_type = 0;
+        *payload_type_out = received_header.message_type;
+        *payload_len_out = received_header.message_len-sizeof(TAP_ADDRESS_HEADER);
 
-        switch(received_header.message_type){
-            case ACK_NACK:
-                tap_received_type = sizeof(TAP_ACK_NACK);
-                break;
-            case DIRECT_COMMAND:
-                tap_received_type = sizeof(TAP_DIRECT_COMMAND);
-                break;
-            case INDIRECT_COMMAND:
-                tap_received_type = sizeof(TAP_INDIRECT_COMMAND);
-                break;
-            case TELEMETRY:
-                tap_received_type = sizeof(TAP_TELEMETRY);
-                break;
-            case NEGOTIATE_DATALINK:
-                //Temporary
-                return(TAP_ERROR_UNSUPPORTED_HEADER);
-            case TELEMETRY_DATALINK:
-                //Temporary
-                return(TAP_ERROR_UNSUPPORTED_HEADER);
-            default:
-                return(TAP_ERROR_UNSUPPORTED_HEADER);
+        memcpy(payload_buffer_out, raw_message + sizeof(TAP_ADDRESS_HEADER), *payload_len_out);
 
+        tapUnCobs(raw_message, (sizeof(TAP_ADDRESS_HEADER) + received_header.message_len));
+
+        uint16_t check_crc_16 = crc_16(raw_message, (sizeof(TAP_ADDRESS_HEADER) + received_header.message_len));
+        if(received_trailer.crc_16 != check_crc_16){
+            return(TAP::TAP_ERROR_CRC_MISMATCH);
         }
+        return(TAP::TAP_OK);
+    }
 
-        if(received_header.message_len-sizeof(TAP_ADDRESS_HEADER) == tap_received_type){
-            *payload_type_out = received_header.message_type;
-            *payload_len_out = received_header.message_len-sizeof(TAP_ADDRESS_HEADER);
+    uint8_t TAP::tapUnCobs(uint8_t* message, uint16_t message_len){
+        
+        uint16_t cobs_pos = 6;
+        uint16_t cobs_check = 0;
 
-            memcpy(payload_buffer_out, raw_message + sizeof(TAP_ADDRESS_HEADER), *payload_len_out);
-            printf("CPP -> Out com bool: %d\n", (uint8_t)payload_buffer_out[2]);
+        //The first cobs field is always in the header, and therefore, an arbitrary position
+        memcpy(&cobs_check, message + cobs_pos, sizeof(uint16_t));
+        cobs_check = __builtin_bswap16(cobs_check);
+        if(cobs_check > 0){
+            message[6] = 0x00;
+            message[7] = 0x00;
+            uint16_t tap_sof_word = __builtin_bswap16(TAP::TAP_SOF_WORD);
+            cobs_pos = cobs_check;
+            //The following cobs fields are in the payload, and their pointers are counted from the start of the message!!
+            while(cobs_pos > 0 && cobs_pos < message_len){
+                memcpy(&cobs_check, message + cobs_pos, sizeof(uint16_t));
+                printf("Here! - cobs_check = %d\n", cobs_check);
+                memcpy(message + cobs_pos, &tap_sof_word, sizeof(uint16_t));
+                cobs_pos = __builtin_bswap16(cobs_check);
+            }
         }
-
         return(TAP::TAP_OK);
     }
