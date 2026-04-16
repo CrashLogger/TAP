@@ -168,7 +168,8 @@
     uint8_t TAP::txMit(uint8_t* message, uint16_t message_len){
         for (uint8_t i = 0; i < message_len; i++) {
 
-            printf("%02X ", message[i]);
+            uart_putc_raw(uart0, message[i]);
+            //printf("%02X ", message[i]);
 
             //Keep in mind, uart1 is for the GPS module!
             //Also remember to set the UART port instead of the USB port in the CmakeLists.txt file!

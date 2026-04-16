@@ -73,6 +73,9 @@ class TAP{
     // ========================================================================================
     //vars and datatypes
 
+    //values
+    static const uint16_t TAP_SOF_WORD = 0xAA55;
+
     uint8_t source_id;
     uint8_t target_id;
 
@@ -202,8 +205,7 @@ class TAP{
     uint32_t messages_since_last_datalink_telem;
     TAP_ADDRESS_HEADER tx_header;
 
-    //values
-    uint16_t TAP_SOF_WORD = 0xAA55;
+    //Values
 
     //Constant for the CRC calculator
     #define CRC16 0x8005
