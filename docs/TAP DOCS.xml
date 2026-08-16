@@ -1,0 +1,555 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<indexing>
+ <object alt="" name="Image2" object_type="graphic"/>
+ <object alt="" name="Image1" object_type="graphic"/>
+ <paragraph index="24" node_type="writer">URPEKARI PROIEKTUA
+&amp; GALERNA UAS</paragraph>
+ <paragraph index="26" node_type="writer">TAP – Tiny Address Protocol</paragraph>
+ <paragraph index="27" node_type="writer">Started: 2025/07</paragraph>
+ <paragraph index="28" node_type="writer">Last revised: 2026/04
+Allowing for reactive channel hopping
+Link-Layer agnosticity</paragraph>
+ <paragraph index="30" node_type="writer">Address Header</paragraph>
+ <object index="31" name="Table1" object_type="table"/>
+ <paragraph index="33" node_type="writer" parent_index="31">Start Byte</paragraph>
+ <paragraph index="36" node_type="writer" parent_index="31">Type</paragraph>
+ <paragraph index="39" node_type="writer" parent_index="31">Field name</paragraph>
+ <paragraph index="42" node_type="writer" parent_index="31">Description</paragraph>
+ <paragraph index="45" node_type="writer" parent_index="31">0</paragraph>
+ <paragraph index="48" node_type="writer" parent_index="31">uint16_t</paragraph>
+ <paragraph index="51" node_type="writer" parent_index="31">SOF_WORD</paragraph>
+ <paragraph index="54" node_type="writer" parent_index="31">Start of Frame indicator</paragraph>
+ <paragraph index="57" node_type="writer" parent_index="31">2</paragraph>
+ <paragraph index="60" node_type="writer" parent_index="31">uint8_t</paragraph>
+ <paragraph index="63" node_type="writer" parent_index="31">TARGET_ID</paragraph>
+ <paragraph index="66" node_type="writer" parent_index="31">Identifier for the receiving device.</paragraph>
+ <paragraph index="69" node_type="writer" parent_index="31">3</paragraph>
+ <paragraph index="72" node_type="writer" parent_index="31">uint8_t</paragraph>
+ <paragraph index="75" node_type="writer" parent_index="31">SOURCE_ID</paragraph>
+ <paragraph index="78" node_type="writer" parent_index="31">Identifier for the transmitting device.</paragraph>
+ <paragraph index="81" node_type="writer" parent_index="31">4</paragraph>
+ <paragraph index="84" node_type="writer" parent_index="31">uint8_t</paragraph>
+ <paragraph index="87" node_type="writer" parent_index="31">MESSAGE_LENGTH</paragraph>
+ <paragraph index="90" node_type="writer" parent_index="31">Payload length in bytes.</paragraph>
+ <paragraph index="93" node_type="writer" parent_index="31">5</paragraph>
+ <paragraph index="96" node_type="writer" parent_index="31">uint8_t</paragraph>
+ <paragraph index="99" node_type="writer" parent_index="31">MESSAGE_TYPE</paragraph>
+ <paragraph index="102" node_type="writer" parent_index="31">Message type indicator</paragraph>
+ <paragraph index="105" node_type="writer" parent_index="31">6</paragraph>
+ <paragraph index="108" node_type="writer" parent_index="31">uint16_t</paragraph>
+ <paragraph index="111" node_type="writer" parent_index="31">COBS</paragraph>
+ <paragraph index="118" node_type="writer">In 32 bit row format:</paragraph>
+ <object index="119" name="Table9" object_type="table"/>
+ <paragraph index="121" node_type="writer" parent_index="119">SOF_WORD</paragraph>
+ <paragraph index="124" node_type="writer" parent_index="119">TARGET_ID</paragraph>
+ <paragraph index="127" node_type="writer" parent_index="119">SOURCE_ID</paragraph>
+ <paragraph index="130" node_type="writer" parent_index="119">MESSAGE_LENGTH</paragraph>
+ <paragraph index="133" node_type="writer" parent_index="119">MESSAGE_TYPE</paragraph>
+ <paragraph index="136" node_type="writer" parent_index="119">COBS</paragraph>
+ <paragraph index="139" node_type="writer">Message trailer</paragraph>
+ <paragraph index="140" node_type="writer">We calculate the CRC of the header and the payload, but not the trailer.</paragraph>
+ <object index="141" name="Table12" object_type="table"/>
+ <paragraph index="143" node_type="writer" parent_index="141">Start Byte</paragraph>
+ <paragraph index="146" node_type="writer" parent_index="141">Type</paragraph>
+ <paragraph index="149" node_type="writer" parent_index="141">Field name</paragraph>
+ <paragraph index="152" node_type="writer" parent_index="141">Description</paragraph>
+ <paragraph index="155" node_type="writer" parent_index="141">m_len</paragraph>
+ <paragraph index="158" node_type="writer" parent_index="141">uint16_t</paragraph>
+ <paragraph index="161" node_type="writer" parent_index="141">CRC_16</paragraph>
+ <paragraph index="164" node_type="writer" parent_index="141">Cyclic Redundancy Check</paragraph>
+ <paragraph index="167" node_type="writer" parent_index="141">m_len + 2</paragraph>
+ <paragraph index="170" node_type="writer" parent_index="141">uint16_t</paragraph>
+ <paragraph index="173" node_type="writer" parent_index="141">SOF_WORD</paragraph>
+ <paragraph index="176" node_type="writer" parent_index="141">End of Frame indicator</paragraph>
+ <paragraph index="180" node_type="writer">In 32 bit row format:</paragraph>
+ <object index="181" name="Table11" object_type="table"/>
+ <paragraph index="183" node_type="writer" parent_index="181">CRC_16</paragraph>
+ <paragraph index="186" node_type="writer" parent_index="181">SOF_WORD</paragraph>
+ <paragraph index="190" node_type="writer">Message types</paragraph>
+ <paragraph index="191" node_type="writer">	A number of message types have been reserved and used:</paragraph>
+ <object index="192" name="Table2" object_type="table"/>
+ <paragraph index="194" node_type="writer" parent_index="192">Value/Range</paragraph>
+ <paragraph index="197" node_type="writer" parent_index="192">Name</paragraph>
+ <paragraph index="200" node_type="writer" parent_index="192">Description</paragraph>
+ <paragraph index="203" node_type="writer" parent_index="192">0</paragraph>
+ <paragraph index="206" node_type="writer" parent_index="192">ACK/NACK</paragraph>
+ <paragraph index="209" node_type="writer" parent_index="192">Positive or negative acknowledgement.</paragraph>
+ <paragraph index="212" node_type="writer" parent_index="192">1</paragraph>
+ <paragraph index="215" node_type="writer" parent_index="192">DIRECT_COMMAND</paragraph>
+ <paragraph index="218" node_type="writer" parent_index="192">Traditional, direct RC control data.</paragraph>
+ <paragraph index="221" node_type="writer" parent_index="192">2</paragraph>
+ <paragraph index="224" node_type="writer" parent_index="192">INDIRECT_COMMAND</paragraph>
+ <paragraph index="227" node_type="writer" parent_index="192">Waypoints.</paragraph>
+ <paragraph index="230" node_type="writer" parent_index="192">3-15</paragraph>
+ <paragraph index="233" node_type="writer" parent_index="192">Reserved</paragraph>
+ <paragraph index="236" node_type="writer" parent_index="192">16</paragraph>
+ <paragraph index="239" node_type="writer" parent_index="192">TELEMETRY</paragraph>
+ <paragraph index="242" node_type="writer" parent_index="192">Position and orientation information.</paragraph>
+ <paragraph index="245" node_type="writer" parent_index="192">17-31</paragraph>
+ <paragraph index="248" node_type="writer" parent_index="192">Reserved</paragraph>
+ <paragraph index="251" node_type="writer" parent_index="192">32-253</paragraph>
+ <paragraph index="254" node_type="writer" parent_index="192">Available for mission-specific use-cases.</paragraph>
+ <paragraph index="257" node_type="writer" parent_index="192">254</paragraph>
+ <paragraph index="260" node_type="writer" parent_index="192">NEGOTIATE_DATALINK</paragraph>
+ <paragraph index="263" node_type="writer" parent_index="192">Datalink channel change command.</paragraph>
+ <paragraph index="266" node_type="writer" parent_index="192">255</paragraph>
+ <paragraph index="269" node_type="writer" parent_index="192">TELEMETRY_DATALINK</paragraph>
+ <paragraph index="272" node_type="writer" parent_index="192">Datalink information.</paragraph>
+ <paragraph index="276" node_type="writer">ACK/NACK – 000</paragraph>
+ <object index="277" name="Table19" object_type="table"/>
+ <paragraph index="279" node_type="writer" parent_index="277">Start Byte</paragraph>
+ <paragraph index="282" node_type="writer" parent_index="277">Type</paragraph>
+ <paragraph index="285" node_type="writer" parent_index="277">Field name</paragraph>
+ <paragraph index="288" node_type="writer" parent_index="277">Description</paragraph>
+ <paragraph index="291" node_type="writer" parent_index="277">8</paragraph>
+ <paragraph index="294" node_type="writer" parent_index="277">uint8_t</paragraph>
+ <paragraph index="297" node_type="writer" parent_index="277">ACK_TYPE</paragraph>
+ <paragraph index="300" node_type="writer" parent_index="277">Type of ACK message</paragraph>
+ <paragraph index="303" node_type="writer" parent_index="277">9</paragraph>
+ <paragraph index="306" node_type="writer" parent_index="277">uint24_t</paragraph>
+ <paragraph index="309" node_type="writer" parent_index="277">TOKEN</paragraph>
+ <paragraph index="312" node_type="writer" parent_index="277">Token for specific ACK uses</paragraph>
+ <paragraph index="315" node_type="writer">uint24_t is not a real type. Use a 3-length array of uint8_t instead.</paragraph>
+ <paragraph index="316" node_type="writer">The following ACK types are defined:</paragraph>
+ <object index="317" name="Table20" object_type="table"/>
+ <paragraph index="319" node_type="writer" parent_index="317">Value/Range</paragraph>
+ <paragraph index="322" node_type="writer" parent_index="317">Name</paragraph>
+ <paragraph index="325" node_type="writer" parent_index="317">Description</paragraph>
+ <paragraph index="328" node_type="writer" parent_index="317">0</paragraph>
+ <paragraph index="331" node_type="writer" parent_index="317">ACK</paragraph>
+ <paragraph index="334" node_type="writer" parent_index="317">Positive acknowledgement.</paragraph>
+ <paragraph index="337" node_type="writer" parent_index="317">1</paragraph>
+ <paragraph index="340" node_type="writer" parent_index="317">NACK</paragraph>
+ <paragraph index="343" node_type="writer" parent_index="317">Negative acknowledgement.</paragraph>
+ <paragraph index="346" node_type="writer" parent_index="317">2-31</paragraph>
+ <paragraph index="349" node_type="writer" parent_index="317">Reserved</paragraph>
+ <paragraph index="352" node_type="writer" parent_index="317">32-255</paragraph>
+ <paragraph index="355" node_type="writer" parent_index="317">Available for mission-specific use-cases.</paragraph>
+ <paragraph index="359" node_type="writer">DIRECT_COMMAND – 001</paragraph>
+ <paragraph index="360" node_type="writer">	A direct command message carries two-byte groups. These can be interpreted as ranges for PWM signals (e.g.: the arduino map() function) or used for raw value transmission.</paragraph>
+ <object index="361" name="Table3" object_type="table"/>
+ <paragraph index="363" node_type="writer" parent_index="361">Start byte</paragraph>
+ <paragraph index="366" node_type="writer" parent_index="361">Type</paragraph>
+ <paragraph index="369" node_type="writer" parent_index="361">Field name</paragraph>
+ <paragraph index="372" node_type="writer" parent_index="361">Description</paragraph>
+ <paragraph index="375" node_type="writer" parent_index="361">8 + (2·n)</paragraph>
+ <paragraph index="378" node_type="writer" parent_index="361">uint16_t</paragraph>
+ <paragraph index="381" node_type="writer" parent_index="361">DATA_n</paragraph>
+ <paragraph index="384" node_type="writer" parent_index="361">nth pair of bytes</paragraph>
+ <paragraph index="388" node_type="writer">	It is recommended to reserve the first pair of bytes  for up to 16 boolean values, to operate lights, software-arming of motors and others.</paragraph>
+ <paragraph index="389" node_type="writer">	Due to the Radiohead Library-established limit, a maximum of 251 bytes can be transmitted per packet. 123 signals can (in theory) be transmitted with this message type..</paragraph>
+ <paragraph index="390" node_type="writer">	That limit is a lot higher than any real use-case is expected to reach, if more data needs to be transmitted, it should be split across multiple packets and the message types 2-15 should be used.</paragraph>
+ <paragraph index="391" node_type="writer">Urpekari implementation of Direct_Command</paragraph>
+ <paragraph index="392" node_type="writer">	We have opted for a 16-bit 8-channel direct command payload. This should provide us with enough controls for anything on board any ROV, USV or UAS planned at this time. Further controls will be handled with additional message types.</paragraph>
+ <object index="393" name="Table13" object_type="table"/>
+ <paragraph index="395" node_type="writer" parent_index="393">Start Byte</paragraph>
+ <paragraph index="398" node_type="writer" parent_index="393">Type</paragraph>
+ <paragraph index="401" node_type="writer" parent_index="393">Field name</paragraph>
+ <paragraph index="404" node_type="writer" parent_index="393">Description</paragraph>
+ <paragraph index="407" node_type="writer" parent_index="393">8 + 0</paragraph>
+ <paragraph index="410" node_type="writer" parent_index="393">uint16_t</paragraph>
+ <paragraph index="413" node_type="writer" parent_index="393">BOOLS</paragraph>
+ <paragraph index="416" node_type="writer" parent_index="393">16 bit boolean-array</paragraph>
+ <paragraph index="419" node_type="writer" parent_index="393">8 + 2</paragraph>
+ <paragraph index="422" node_type="writer" parent_index="393">uint16_t</paragraph>
+ <paragraph index="425" node_type="writer" parent_index="393">Reserved</paragraph>
+ <paragraph index="428" node_type="writer" parent_index="393">Reserved</paragraph>
+ <paragraph index="431" node_type="writer" parent_index="393">8 + 4</paragraph>
+ <paragraph index="434" node_type="writer" parent_index="393">uint16_t</paragraph>
+ <paragraph index="437" node_type="writer" parent_index="393">Channel_0</paragraph>
+ <paragraph index="440" node_type="writer" parent_index="393">Gradual control channel</paragraph>
+ <paragraph index="443" node_type="writer" parent_index="393">8 + 6</paragraph>
+ <paragraph index="446" node_type="writer" parent_index="393">uint16_t</paragraph>
+ <paragraph index="449" node_type="writer" parent_index="393">Channel_1</paragraph>
+ <paragraph index="452" node_type="writer" parent_index="393">Gradual control channel</paragraph>
+ <paragraph index="455" node_type="writer" parent_index="393">…</paragraph>
+ <paragraph index="458" node_type="writer" parent_index="393">…</paragraph>
+ <paragraph index="461" node_type="writer" parent_index="393">…</paragraph>
+ <paragraph index="464" node_type="writer" parent_index="393">...</paragraph>
+ <paragraph index="467" node_type="writer" parent_index="393">8 + 18</paragraph>
+ <paragraph index="470" node_type="writer" parent_index="393">uint16_t</paragraph>
+ <paragraph index="473" node_type="writer" parent_index="393">Channel_7</paragraph>
+ <paragraph index="476" node_type="writer" parent_index="393">Gradual control channel</paragraph>
+ <paragraph index="479" node_type="writer">In 32 bit row format:</paragraph>
+ <object index="480" name="Table14" object_type="table"/>
+ <paragraph index="482" node_type="writer" parent_index="480">BOOLS</paragraph>
+ <paragraph index="485" node_type="writer" parent_index="480">Reserved</paragraph>
+ <paragraph index="488" node_type="writer" parent_index="480">Channel_0</paragraph>
+ <paragraph index="491" node_type="writer" parent_index="480">Channel_1</paragraph>
+ <paragraph index="494" node_type="writer" parent_index="480">Channel_2</paragraph>
+ <paragraph index="497" node_type="writer" parent_index="480">Channel_3</paragraph>
+ <paragraph index="500" node_type="writer" parent_index="480">Channel_4</paragraph>
+ <paragraph index="503" node_type="writer" parent_index="480">Channel_5</paragraph>
+ <paragraph index="506" node_type="writer" parent_index="480">Channel_6</paragraph>
+ <paragraph index="509" node_type="writer" parent_index="480">Channel_7</paragraph>
+ <paragraph index="513" node_type="writer">INDIRECT_COMMAND - 002</paragraph>
+ <paragraph index="514" node_type="writer">	An indirect command carries waypoint information: GPS coordinates, altitude/depth information, and a radius indicating the required precission to “hit” the waypoint.</paragraph>
+ <object index="515" name="Table4" object_type="table"/>
+ <paragraph index="517" node_type="writer" parent_index="515">Start byte</paragraph>
+ <paragraph index="520" node_type="writer" parent_index="515">Type</paragraph>
+ <paragraph index="523" node_type="writer" parent_index="515">Field name</paragraph>
+ <paragraph index="526" node_type="writer" parent_index="515">Description [unit]</paragraph>
+ <paragraph index="529" node_type="writer" parent_index="515">8 + 0</paragraph>
+ <paragraph index="532" node_type="writer" parent_index="515">uint16_t</paragraph>
+ <paragraph index="535" node_type="writer" parent_index="515">BOOLS</paragraph>
+ <paragraph index="538" node_type="writer" parent_index="515">16 bit boolean-array</paragraph>
+ <paragraph index="541" node_type="writer" parent_index="515">8 + 2</paragraph>
+ <paragraph index="544" node_type="writer" parent_index="515">uint16_t</paragraph>
+ <paragraph index="547" node_type="writer" parent_index="515">Reserved</paragraph>
+ <paragraph index="550" node_type="writer" parent_index="515">Reserved</paragraph>
+ <paragraph index="553" node_type="writer" parent_index="515">8 + 4</paragraph>
+ <paragraph index="556" node_type="writer" parent_index="515">float</paragraph>
+ <paragraph index="559" node_type="writer" parent_index="515">GPS_LAT</paragraph>
+ <paragraph index="562" node_type="writer" parent_index="515">Waypoint GPS Latitude. [DEC]</paragraph>
+ <paragraph index="565" node_type="writer" parent_index="515">8 + 8</paragraph>
+ <paragraph index="568" node_type="writer" parent_index="515">float</paragraph>
+ <paragraph index="571" node_type="writer" parent_index="515">GPS_LON</paragraph>
+ <paragraph index="574" node_type="writer" parent_index="515">Waypoint GPS Longitude. [DEC]</paragraph>
+ <paragraph index="577" node_type="writer" parent_index="515">8 + 12</paragraph>
+ <paragraph index="580" node_type="writer" parent_index="515">uint16_t</paragraph>
+ <paragraph index="583" node_type="writer" parent_index="515">ALT-DEP</paragraph>
+ <paragraph index="586" node_type="writer" parent_index="515">Waypoint altitude or depth. [cm]</paragraph>
+ <paragraph index="589" node_type="writer" parent_index="515">8 + 14</paragraph>
+ <paragraph index="592" node_type="writer" parent_index="515">uint16_t</paragraph>
+ <paragraph index="595" node_type="writer" parent_index="515">RADIUS</paragraph>
+ <paragraph index="598" node_type="writer" parent_index="515">Waypoint precission radius. [m]</paragraph>
+ <paragraph index="602" node_type="writer">In 32 bit row format:</paragraph>
+ <object index="603" name="Table8" object_type="table"/>
+ <paragraph index="605" node_type="writer" parent_index="603">BOOLS</paragraph>
+ <paragraph index="608" node_type="writer" parent_index="603">Reserved</paragraph>
+ <paragraph index="611" node_type="writer" parent_index="603">GPS_LAT</paragraph>
+ <paragraph index="614" node_type="writer" parent_index="603">GPS_LON</paragraph>
+ <paragraph index="617" node_type="writer" parent_index="603">ALT-DEP</paragraph>
+ <paragraph index="620" node_type="writer" parent_index="603">RADIUS</paragraph>
+ <paragraph index="624" node_type="writer">Boolean arrays for DIRECT_COMMAND and INDIRECT_COMMAND</paragraph>
+ <paragraph index="625" node_type="writer">	While only INDIRECT_COMMAND messages require the 2-Byte boolean array at the start of the payload, it is recommended to do so in DIRECT_COMMAND messages.</paragraph>
+ <paragraph index="626" node_type="writer">	This example shows a simple and practical way to use them to aid the control of an autonomous vehicle. What is described in the following section is what is implemented in the flight controller for the Galerna UAS:</paragraph>
+ <object index="627" name="Table7" object_type="table"/>
+ <paragraph index="629" node_type="writer" parent_index="627">Bit</paragraph>
+ <paragraph index="632" node_type="writer" parent_index="627">Name</paragraph>
+ <paragraph index="635" node_type="writer" parent_index="627">Description when true (1)</paragraph>
+ <paragraph index="638" node_type="writer" parent_index="627">0</paragraph>
+ <paragraph index="641" node_type="writer" parent_index="627">ARM</paragraph>
+ <paragraph index="644" node_type="writer" parent_index="627">Allow for software arming of the thrust systems.</paragraph>
+ <paragraph index="647" node_type="writer" parent_index="627">1</paragraph>
+ <paragraph index="650" node_type="writer" parent_index="627">AUTO</paragraph>
+ <paragraph index="653" node_type="writer" parent_index="627">Navigate autonomously folowing waypoints.</paragraph>
+ <paragraph index="654" node_type="writer" parent_index="627">(This is overriden by DIRECT_COMMAND messages, even when they have the AUTO bit enabled.)</paragraph>
+ <paragraph index="657" node_type="writer" parent_index="627">2</paragraph>
+ <paragraph index="660" node_type="writer" parent_index="627">STAB</paragraph>
+ <paragraph index="663" node_type="writer" parent_index="627">Partial autopilot, the UAS will attempt level navigation and filter inputs.
+(If applicable.)</paragraph>
+ <paragraph index="666" node_type="writer" parent_index="627">3</paragraph>
+ <paragraph index="669" node_type="writer" parent_index="627">NAVLIGHT</paragraph>
+ <paragraph index="672" node_type="writer" parent_index="627">Turn on navigation lights.</paragraph>
+ <paragraph index="675" node_type="writer" parent_index="627">4</paragraph>
+ <paragraph index="678" node_type="writer" parent_index="627">STROBE</paragraph>
+ <paragraph index="681" node_type="writer" parent_index="627">Turn on strobe lights.</paragraph>
+ <paragraph index="684" node_type="writer" parent_index="627">5</paragraph>
+ <paragraph index="687" node_type="writer" parent_index="627">LAND</paragraph>
+ <paragraph index="690" node_type="writer" parent_index="627">Extend landing gear or other physical supports.
+(If applicable.)</paragraph>
+ <paragraph index="693" node_type="writer" parent_index="627">6</paragraph>
+ <paragraph index="696" node_type="writer" parent_index="627">N/A</paragraph>
+ <paragraph index="699" node_type="writer" parent_index="627">Free so far</paragraph>
+ <paragraph index="702" node_type="writer" parent_index="627">7</paragraph>
+ <paragraph index="705" node_type="writer" parent_index="627">N/A</paragraph>
+ <paragraph index="708" node_type="writer" parent_index="627">Free so far</paragraph>
+ <paragraph index="711" node_type="writer" parent_index="627">8</paragraph>
+ <paragraph index="714" node_type="writer" parent_index="627">N/A</paragraph>
+ <paragraph index="717" node_type="writer" parent_index="627">Free so far</paragraph>
+ <paragraph index="720" node_type="writer" parent_index="627">9</paragraph>
+ <paragraph index="723" node_type="writer" parent_index="627">N/A</paragraph>
+ <paragraph index="726" node_type="writer" parent_index="627">Free so far</paragraph>
+ <paragraph index="729" node_type="writer" parent_index="627">10</paragraph>
+ <paragraph index="732" node_type="writer" parent_index="627">N/A</paragraph>
+ <paragraph index="735" node_type="writer" parent_index="627">Free so far</paragraph>
+ <paragraph index="738" node_type="writer" parent_index="627">11</paragraph>
+ <paragraph index="741" node_type="writer" parent_index="627">COMLOSSBY</paragraph>
+ <paragraph index="744" node_type="writer" parent_index="627">Bypass mid-flight communications loss detection and reaction.
+(Use with caution.)</paragraph>
+ <paragraph index="747" node_type="writer" parent_index="627">12</paragraph>
+ <paragraph index="750" node_type="writer" parent_index="627">LOITER</paragraph>
+ <paragraph index="753" node_type="writer" parent_index="627">Loiter next waypoint, requires an INDIRECT_COMMAND.
+(If off, any waypoint will be treated as a fly-through waypoint.)</paragraph>
+ <paragraph index="756" node_type="writer" parent_index="627">13</paragraph>
+ <paragraph index="759" node_type="writer" parent_index="627">RTH</paragraph>
+ <paragraph index="762" node_type="writer" parent_index="627">Return to home (First waypoint) directly.</paragraph>
+ <paragraph index="763" node_type="writer" parent_index="627">(Home may also be specified as the first GPS point registered.)</paragraph>
+ <paragraph index="766" node_type="writer" parent_index="627">14</paragraph>
+ <paragraph index="769" node_type="writer" parent_index="627">CHECKSUM</paragraph>
+ <paragraph index="772" node_type="writer" parent_index="627">Checksum</paragraph>
+ <paragraph index="775" node_type="writer" parent_index="627">15</paragraph>
+ <paragraph index="786" node_type="writer">TELEMETRY - 016</paragraph>
+ <paragraph index="787" node_type="writer">	A basic telemetry message carries information regarding the vehicle’s current position.</paragraph>
+ <object index="788" name="Table5" object_type="table"/>
+ <paragraph index="790" node_type="writer" parent_index="788">Start byte</paragraph>
+ <paragraph index="793" node_type="writer" parent_index="788">Type</paragraph>
+ <paragraph index="796" node_type="writer" parent_index="788">Field name</paragraph>
+ <paragraph index="799" node_type="writer" parent_index="788">Description [unit]</paragraph>
+ <paragraph index="802" node_type="writer" parent_index="788">8 + 0</paragraph>
+ <paragraph index="805" node_type="writer" parent_index="788">float</paragraph>
+ <paragraph index="808" node_type="writer" parent_index="788">GPS_LAT</paragraph>
+ <paragraph index="811" node_type="writer" parent_index="788">Current GPS Latitude. [DEC]</paragraph>
+ <paragraph index="814" node_type="writer" parent_index="788">8 + 4</paragraph>
+ <paragraph index="817" node_type="writer" parent_index="788">float</paragraph>
+ <paragraph index="820" node_type="writer" parent_index="788">GPS_LON</paragraph>
+ <paragraph index="823" node_type="writer" parent_index="788">Current GPS Longitude. [DEC]</paragraph>
+ <paragraph index="826" node_type="writer" parent_index="788">8 + 8</paragraph>
+ <paragraph index="829" node_type="writer" parent_index="788">uint16_t</paragraph>
+ <paragraph index="832" node_type="writer" parent_index="788">ALT-DEP</paragraph>
+ <paragraph index="835" node_type="writer" parent_index="788">Current altitude [m] or depth. [cm]</paragraph>
+ <paragraph index="838" node_type="writer" parent_index="788">8 + 10</paragraph>
+ <paragraph index="841" node_type="writer" parent_index="788">int16_t</paragraph>
+ <paragraph index="844" node_type="writer" parent_index="788">HEADING</paragraph>
+ <paragraph index="847" node_type="writer" parent_index="788">Heading. [º/10] (24.5º → 245 in this variable)</paragraph>
+ <paragraph index="850" node_type="writer" parent_index="788">8 + 12</paragraph>
+ <paragraph index="853" node_type="writer" parent_index="788">float</paragraph>
+ <paragraph index="856" node_type="writer" parent_index="788">ROLL</paragraph>
+ <paragraph index="859" node_type="writer" parent_index="788">Roll angle. [º]</paragraph>
+ <paragraph index="862" node_type="writer" parent_index="788">8 + 16</paragraph>
+ <paragraph index="865" node_type="writer" parent_index="788">float</paragraph>
+ <paragraph index="868" node_type="writer" parent_index="788">PITCH</paragraph>
+ <paragraph index="871" node_type="writer" parent_index="788">Pitch angle. [º]</paragraph>
+ <paragraph index="875" node_type="writer">In 32 bit row format:</paragraph>
+ <object index="876" name="Table10" object_type="table"/>
+ <paragraph index="878" node_type="writer" parent_index="876">GPS_LAT</paragraph>
+ <paragraph index="881" node_type="writer" parent_index="876">GPS_LON</paragraph>
+ <paragraph index="884" node_type="writer" parent_index="876">ALT-DEP</paragraph>
+ <paragraph index="887" node_type="writer" parent_index="876">HEADING</paragraph>
+ <paragraph index="890" node_type="writer" parent_index="876">ROLL</paragraph>
+ <paragraph index="893" node_type="writer" parent_index="876">PITCH</paragraph>
+ <paragraph index="897" node_type="writer">NEGOTIATE_DATALINK- 254</paragraph>
+ <paragraph index="898" node_type="writer">	A datalink control message, exclusively used by the radio ingest device. A channel hop is used when a channel that is in use is of low quality.</paragraph>
+ <paragraph index="899" node_type="writer">	The information provided by the DATALINK_TELEMETRY is used to determine the quality of the channel in use. A channel hop may also be purposefully triggered by the user.</paragraph>
+ <paragraph index="900" node_type="writer">	In the current version, channel options must be set up before code compilation.</paragraph>
+ <paragraph index="901" node_type="writer">TELEMETRY_DATALINK – 255</paragraph>
+ <paragraph index="902" node_type="writer">	A datalink telemetry message, exclusively used by the radio ingest device. It’s main purpose is to keep both sides of the conversation informed of datalink quality.</paragraph>
+ <object index="903" name="Table6" object_type="table"/>
+ <paragraph index="905" node_type="writer" parent_index="903">Start byte</paragraph>
+ <paragraph index="908" node_type="writer" parent_index="903">Type</paragraph>
+ <paragraph index="911" node_type="writer" parent_index="903">Field name</paragraph>
+ <paragraph index="914" node_type="writer" parent_index="903">Description [unit]</paragraph>
+ <paragraph index="917" node_type="writer" parent_index="903">8 + 0</paragraph>
+ <paragraph index="920" node_type="writer" parent_index="903">int16_t</paragraph>
+ <paragraph index="923" node_type="writer" parent_index="903">RSSI</paragraph>
+ <paragraph index="926" node_type="writer" parent_index="903">Received Signal Strength Indicator. [dB]</paragraph>
+ <paragraph index="929" node_type="writer" parent_index="903">8 + 2</paragraph>
+ <paragraph index="932" node_type="writer" parent_index="903">uint16_t</paragraph>
+ <paragraph index="935" node_type="writer" parent_index="903">SNR</paragraph>
+ <paragraph index="938" node_type="writer" parent_index="903">Signal to Noise Ratio [dB]</paragraph>
+ <paragraph index="941" node_type="writer" parent_index="903">8 + 4</paragraph>
+ <paragraph index="944" node_type="writer" parent_index="903">uint16_t</paragraph>
+ <paragraph index="947" node_type="writer" parent_index="903">RTT</paragraph>
+ <paragraph index="950" node_type="writer" parent_index="903">Return trip time [ms]</paragraph>
+ <paragraph index="953" node_type="writer" parent_index="903">8 + 6</paragraph>
+ <paragraph index="956" node_type="writer" parent_index="903">uint16_t</paragraph>
+ <paragraph index="959" node_type="writer" parent_index="903">SENT_PKTS</paragraph>
+ <paragraph index="962" node_type="writer" parent_index="903">Amount of messages sent since the previous TELEMETRY_DATALINK message</paragraph>
+ <paragraph index="965" node_type="writer" parent_index="903">8 + 8</paragraph>
+ <paragraph index="968" node_type="writer" parent_index="903">uint16_t</paragraph>
+ <paragraph index="971" node_type="writer" parent_index="903">DELTA_T</paragraph>
+ <paragraph index="974" node_type="writer" parent_index="903">Time elapsed since the previous TELEMETRY_DATALINK message [ms]</paragraph>
+ <paragraph index="977" node_type="writer" parent_index="903">8 + 10</paragraph>
+ <paragraph index="980" node_type="writer" parent_index="903">uint16_t</paragraph>
+ <paragraph index="983" node_type="writer" parent_index="903">Reserved</paragraph>
+ <paragraph index="986" node_type="writer" parent_index="903">Reserved</paragraph>
+ <paragraph index="990" node_type="writer">Specific feature implementations</paragraph>
+ <paragraph index="991" node_type="writer">Message serializer</paragraph>
+ <paragraph index="992" node_type="writer">	The TAP serializer works by receiving an incomplete header and a complete payload. The following table highlights the header fields the serializer requires:</paragraph>
+ <object index="993" name="Table15" object_type="table"/>
+ <paragraph index="995" node_type="writer" parent_index="993">SOF_WORD</paragraph>
+ <paragraph index="998" node_type="writer" parent_index="993">TARGET_ID</paragraph>
+ <paragraph index="1001" node_type="writer" parent_index="993">SOURCE_ID</paragraph>
+ <paragraph index="1004" node_type="writer" parent_index="993">MESSAGE_LENGTH</paragraph>
+ <paragraph index="1007" node_type="writer" parent_index="993">MESSAGE_TYPE</paragraph>
+ <paragraph index="1010" node_type="writer" parent_index="993">COBS</paragraph>
+ <paragraph index="1013" node_type="writer">	The raw payload will consist of arbitrary data, identified for the upper layers by the MESSAGE_TYPE field on the receiving end, and be of MESSAGE_LENGTH length.</paragraph>
+ <paragraph index="1014" node_type="writer">	Big endian byte orders have been used for all fields defined in this document.</paragraph>
+ <paragraph index="1015" node_type="writer">COBS</paragraph>
+ <paragraph index="1016" node_type="writer">	Consistent Overhead Byte Stuffing (COBS) is a mechanism that protects the Start of Frame (SOF) word from appearing in illegal positions. It is necessary for un-managed links such as UART and bit-banged radio links, where the start and end of a frame are up for us to manage.</paragraph>
+ <paragraph index="1017" node_type="writer">	COBS as implemented by TAP uses a 2-byte field in every Address Header. The serializer and deserializer must handle COBS in a completely transparent way. It must be the last step taken before transmission and the first step taken upon reception. COBS protects header, payload and trailer from illegal SOF word appearances.</paragraph>
+ <paragraph index="1018" node_type="writer">	Let’s take the following example, with the header highlighted in yellow and the trailer highlighted in green.</paragraph>
+ <object index="1019" name="Table16" object_type="table"/>
+ <paragraph index="1021" node_type="writer" parent_index="1019">SOF_WORD</paragraph>
+ <paragraph index="1024" node_type="writer" parent_index="1019">TARGET_ID</paragraph>
+ <paragraph index="1027" node_type="writer" parent_index="1019">SOURCE_ID</paragraph>
+ <paragraph index="1030" node_type="writer" parent_index="1019">MESSAGE_LENGTH</paragraph>
+ <paragraph index="1033" node_type="writer" parent_index="1019">MESSAGE_TYPE</paragraph>
+ <paragraph index="1036" node_type="writer" parent_index="1019">COBS</paragraph>
+ <paragraph index="1039" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1042" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1045" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1048" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1051" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1054" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1057" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1060" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1063" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1066" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1069" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1072" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1075" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1078" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1081" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1084" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1087" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1090" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1093" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1096" node_type="writer" parent_index="1019">DATA</paragraph>
+ <paragraph index="1099" node_type="writer" parent_index="1019">CRC_16</paragraph>
+ <paragraph index="1102" node_type="writer" parent_index="1019">SOF_WORD</paragraph>
+ <paragraph index="1105" node_type="writer">	In a case with no illegal SOF word placement, the COBS field will simply be set to 0x0000 and the message will be transmitted with no more complication.</paragraph>
+ <paragraph index="1106" node_type="writer">	However, were the SOF word to show up at any point in the message, the COBS field in the header will instead point to the first byte of the illegal appearance of the SOF word. The illegal appearance of the SOF word will then be replaced by either 0x0000, if it is the last illegal appearance of the SOF word, or the pointer to the following appearance of an illegal SOF word.</paragraph>
+ <paragraph index="1107" node_type="writer">	Following along with the example, given this message:</paragraph>
+ <object index="1108" name="Table17" object_type="table"/>
+ <paragraph index="1110" node_type="writer" parent_index="1108">SOF_WORD</paragraph>
+ <paragraph index="1113" node_type="writer" parent_index="1108">TARGET_ID</paragraph>
+ <paragraph index="1116" node_type="writer" parent_index="1108">SOURCE_ID</paragraph>
+ <paragraph index="1119" node_type="writer" parent_index="1108">MESSAGE_LENGTH</paragraph>
+ <paragraph index="1122" node_type="writer" parent_index="1108">MESSAGE_TYPE</paragraph>
+ <paragraph index="1125" node_type="writer" parent_index="1108">COBS</paragraph>
+ <paragraph index="1128" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1131" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1134" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1137" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1140" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1143" node_type="writer" parent_index="1108">ILLEGAL SOF_WORD</paragraph>
+ <paragraph index="1146" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1149" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1152" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1155" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1158" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1161" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1164" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1167" node_type="writer" parent_index="1108">ILLEGAL SOF_WORD</paragraph>
+ <paragraph index="1170" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1173" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1176" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1179" node_type="writer" parent_index="1108">DATA</paragraph>
+ <paragraph index="1182" node_type="writer" parent_index="1108">CRC_16</paragraph>
+ <paragraph index="1185" node_type="writer" parent_index="1108">SOF_WORD</paragraph>
+ <paragraph index="1188" node_type="writer">The COBS algorithm must replace the mentioned fields like so:</paragraph>
+ <object index="1189" name="Table18" object_type="table"/>
+ <paragraph index="1191" node_type="writer" parent_index="1189">SOF_WORD</paragraph>
+ <paragraph index="1194" node_type="writer" parent_index="1189">TARGET_ID</paragraph>
+ <paragraph index="1197" node_type="writer" parent_index="1189">SOURCE_ID</paragraph>
+ <paragraph index="1200" node_type="writer" parent_index="1189">MESSAGE_LENGTH</paragraph>
+ <paragraph index="1203" node_type="writer" parent_index="1189">MESSAGE_TYPE</paragraph>
+ <paragraph index="1206" node_type="writer" parent_index="1189">13</paragraph>
+ <paragraph index="1209" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1212" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1215" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1218" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1221" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1224" node_type="writer" parent_index="1189">22</paragraph>
+ <paragraph index="1227" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1230" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1233" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1236" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1239" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1242" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1245" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1248" node_type="writer" parent_index="1189">0</paragraph>
+ <paragraph index="1251" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1254" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1257" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1260" node_type="writer" parent_index="1189">DATA</paragraph>
+ <paragraph index="1263" node_type="writer" parent_index="1189">CRC_16</paragraph>
+ <paragraph index="1266" node_type="writer" parent_index="1189">SOF_WORD</paragraph>
+ <paragraph index="1270" node_type="writer">Examples of mission-specific messages</paragraph>
+ <paragraph index="1271" node_type="writer">SEA SCIENCE 01 – 032</paragraph>
+ <paragraph index="1272" node_type="writer">A basic set of readings for a sea-centric sensor suite</paragraph>
+ <object index="1273" name="Table23" object_type="table"/>
+ <paragraph index="1275" node_type="writer" parent_index="1273">Start byte</paragraph>
+ <paragraph index="1278" node_type="writer" parent_index="1273">Type</paragraph>
+ <paragraph index="1281" node_type="writer" parent_index="1273">Field name</paragraph>
+ <paragraph index="1284" node_type="writer" parent_index="1273">Description [unit]</paragraph>
+ <paragraph index="1287" node_type="writer" parent_index="1273">8 + 0</paragraph>
+ <paragraph index="1290" node_type="writer" parent_index="1273">float</paragraph>
+ <paragraph index="1293" node_type="writer" parent_index="1273">temp</paragraph>
+ <paragraph index="1296" node_type="writer" parent_index="1273">Water temperature</paragraph>
+ <paragraph index="1299" node_type="writer" parent_index="1273">8 + 4</paragraph>
+ <paragraph index="1302" node_type="writer" parent_index="1273">float</paragraph>
+ <paragraph index="1305" node_type="writer" parent_index="1273">conduct</paragraph>
+ <paragraph index="1308" node_type="writer" parent_index="1273">Water conductivity (Used for salinity)</paragraph>
+ <paragraph index="1311" node_type="writer" parent_index="1273">8 + 8</paragraph>
+ <paragraph index="1314" node_type="writer" parent_index="1273">float</paragraph>
+ <paragraph index="1317" node_type="writer" parent_index="1273">pressure</paragraph>
+ <paragraph index="1320" node_type="writer" parent_index="1273">Water pressure (Also used for depth)</paragraph>
+ <paragraph index="1323" node_type="writer" parent_index="1273">8 + 12</paragraph>
+ <paragraph index="1326" node_type="writer" parent_index="1273">float</paragraph>
+ <paragraph index="1329" node_type="writer" parent_index="1273">ph</paragraph>
+ <paragraph index="1332" node_type="writer" parent_index="1273">Water PH</paragraph>
+ <paragraph index="1336" node_type="writer">In 32 bit row format:</paragraph>
+ <object index="1337" name="Table24" object_type="table"/>
+ <paragraph index="1339" node_type="writer" parent_index="1337">TEMP</paragraph>
+ <paragraph index="1342" node_type="writer" parent_index="1337">CONDUCT</paragraph>
+ <paragraph index="1345" node_type="writer" parent_index="1337">PRESSURE</paragraph>
+ <paragraph index="1348" node_type="writer" parent_index="1337">PH</paragraph>
+ <paragraph index="1353" node_type="writer">RADIATION SCIENCE 01 – 034</paragraph>
+ <paragraph index="1354" node_type="writer">A payload to transport measurements from Radiacode 10X devices</paragraph>
+ <object index="1355" name="Table21" object_type="table"/>
+ <paragraph index="1357" node_type="writer" parent_index="1355">Start byte</paragraph>
+ <paragraph index="1360" node_type="writer" parent_index="1355">Type</paragraph>
+ <paragraph index="1363" node_type="writer" parent_index="1355">Field name</paragraph>
+ <paragraph index="1366" node_type="writer" parent_index="1355">Description [unit]</paragraph>
+ <paragraph index="1369" node_type="writer" parent_index="1355">8 + 0</paragraph>
+ <paragraph index="1372" node_type="writer" parent_index="1355">float</paragraph>
+ <paragraph index="1375" node_type="writer" parent_index="1355">count_rate</paragraph>
+ <paragraph index="1378" node_type="writer" parent_index="1355">Count rate [CPS]</paragraph>
+ <paragraph index="1381" node_type="writer" parent_index="1355">8 + 4</paragraph>
+ <paragraph index="1384" node_type="writer" parent_index="1355">float</paragraph>
+ <paragraph index="1387" node_type="writer" parent_index="1355">count_error</paragraph>
+ <paragraph index="1390" node_type="writer" parent_index="1355">Estimated error for count_rate [%]</paragraph>
+ <paragraph index="1393" node_type="writer" parent_index="1355">8 + 8</paragraph>
+ <paragraph index="1396" node_type="writer" parent_index="1355">float</paragraph>
+ <paragraph index="1399" node_type="writer" parent_index="1355">dose_rate</paragraph>
+ <paragraph index="1402" node_type="writer" parent_index="1355">Dose rate [Sv]</paragraph>
+ <paragraph index="1405" node_type="writer" parent_index="1355">8 + 12</paragraph>
+ <paragraph index="1408" node_type="writer" parent_index="1355">float</paragraph>
+ <paragraph index="1411" node_type="writer" parent_index="1355">dose_error</paragraph>
+ <paragraph index="1414" node_type="writer" parent_index="1355">Estimated error for dose_rate [%]</paragraph>
+ <paragraph index="1418" node_type="writer">In 32 bit row format:</paragraph>
+ <object index="1419" name="Table22" object_type="table"/>
+ <paragraph index="1421" node_type="writer" parent_index="1419">COUNT_RATE</paragraph>
+ <paragraph index="1424" node_type="writer" parent_index="1419">COUNT_ERROR</paragraph>
+ <paragraph index="1427" node_type="writer" parent_index="1419">DOSE_RATE</paragraph>
+ <paragraph index="1430" node_type="writer" parent_index="1419">DOSE_ERROR</paragraph>
+ <paragraph index="1433" node_type="writer">RADIATION SCIENCE 02 – 035</paragraph>
+ <paragraph index="1434" node_type="writer">A payload to transport spectrum readings from Radiacode 10X devices. Because the spectrum definition may vary – according to the library anyway – the simplest method to transport this is to dump it all.</paragraph>
+ <object index="1435" name="Table25" object_type="table"/>
+ <paragraph index="1437" node_type="writer" parent_index="1435">Start byte</paragraph>
+ <paragraph index="1440" node_type="writer" parent_index="1435">Type</paragraph>
+ <paragraph index="1443" node_type="writer" parent_index="1435">Field name</paragraph>
+ <paragraph index="1446" node_type="writer" parent_index="1435">Description [unit]</paragraph>
+ <paragraph index="1449" node_type="writer" parent_index="1435">8 + 0</paragraph>
+ <paragraph index="1452" node_type="writer" parent_index="1435">uint8_t</paragraph>
+ <paragraph index="1455" node_type="writer" parent_index="1435">length</paragraph>
+ <paragraph index="1458" node_type="writer" parent_index="1435">Length in bytes</paragraph>
+ <paragraph index="1461" node_type="writer" parent_index="1435">8 + 4</paragraph>
+ <paragraph index="1464" node_type="writer" parent_index="1435">uint8_t[128]</paragraph>
+ <paragraph index="1467" node_type="writer" parent_index="1435">raw</paragraph>
+ <paragraph index="1470" node_type="writer" parent_index="1435">Raw dump of the spectrum data.</paragraph>
+ <paragraph index="1474" node_type="writer">In 32 bit row format:</paragraph>
+ <object index="1475" name="Table26" object_type="table"/>
+ <paragraph index="1477" node_type="writer" parent_index="1475">LENGTH</paragraph>
+ <paragraph index="1480" node_type="writer" parent_index="1475">RAW</paragraph>
+ <object name="Shape 2" alt="" object_type="shape" description=""/>
+ <object name="Shape 5" alt="" object_type="shape" description=""/>
+ <object name="Shape 5" alt="" object_type="shape" description=""/>
+ <object name="Shape 5" alt="" object_type="shape" description=""/>
+ <object name="Shape 5" alt="" object_type="shape" description=""/>
+ <object name="Shape 5" alt="" object_type="shape" description=""/>
+ <object name="Shape 5" alt="" object_type="shape" description=""/>
+ <object name="Shape 5" alt="" object_type="shape" description=""/>
+ <object name="Shape 6" alt="" object_type="shape" description=""/>
+ <object name="Shape 3" alt="" object_type="shape" description=""/>
+ <object name="Shape 3" alt="" object_type="shape" description=""/>
+ <object name="Shape 3" alt="" object_type="shape" description=""/>
+ <object name="Shape 3" alt="" object_type="shape" description=""/>
+ <object name="Shape 3" alt="" object_type="shape" description=""/>
+ <object name="Shape 3" alt="" object_type="shape" description=""/>
+ <object name="Shape 1" alt="" object_type="shape" description=""/>
+ <object name="Polygon 5 corners 1" alt="" object_type="shape" description=""/>
+</indexing>

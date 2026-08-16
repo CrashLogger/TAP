@@ -37,6 +37,7 @@
         //The crc_16 function returns the crc_16 value in BIG ENDIAN already!!
         TAP::TAP_TRAILER trailer;
         trailer.crc_16 = crc_16(buffer, offset);
+        trailer.eof_word = __builtin_bswap16(header->sof_word);
         memcpy(buffer + offset, &trailer, sizeof(TAP_TRAILER));
 
         uint16_t full_byte_length = offset + sizeof(TAP_TRAILER);
@@ -44,6 +45,11 @@
         // It's only really necessary in unmanaged links, like... UART, CAN and Bit-Banged radios
         // Still, better safe than sorry
         tapCobs(buffer, full_byte_length);
+
+/*         for(uint32_t i = 0; i<full_byte_length; i++){
+            printf("%02x", buffer[i]);
+        }
+        printf("\n"); */
 
         return (full_byte_length);
     }
@@ -180,7 +186,7 @@
             //And like, I'd have to go to my pile of ESPs to get a free one, then get another USB cable...
             
         }
-        printf("\t\n");
+        //printf("\t\n");
         return(TAP::TAP_OK);
     }
 

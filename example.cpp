@@ -224,7 +224,7 @@ int pico_gpio_init(void) {
 
     //UART0 - TAP COMMUNICATION
     // ==================================================================================== //
-    uart_init(TAP_UART_ID, 115200);
+    uart_init(TAP_UART_ID, 9600);
     gpio_set_function(0, UART_FUNCSEL_NUM(TAP_UART_ID, 0));
     gpio_set_function(1, UART_FUNCSEL_NUM(TAP_UART_ID, 1));
 
@@ -278,7 +278,7 @@ int main() {
         tap_telemetry();
 
         //Decodes a TAP message
-        tap_rx_process();
+        //tap_rx_process();
 
         //Reads from USB, polling
 
