@@ -245,7 +245,7 @@
             //The following cobs fields are in the payload, and their pointers are counted from the start of the message!!
             while(cobs_pos > 0 && cobs_pos < message_len){
                 memcpy(&cobs_check, message + cobs_pos, sizeof(uint16_t));
-                printf("Here! - cobs_check = %d\n", cobs_check);
+                printf("[DEBUG] Here! - cobs_check = %d\n", cobs_check);
                 memcpy(message + cobs_pos, &tap_sof_word, sizeof(uint16_t));
                 cobs_pos = __builtin_bswap16(cobs_check);
             }

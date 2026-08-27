@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "string.h"
 #include "TAP.h"
+#include "GPS.h"
 
 //===== DEFINITIONS
 
@@ -31,6 +32,11 @@ uint32_t ms_last_change = 0;
 uint32_t ms_last_tap = 0;
 uint32_t ms_last_rx = 0;
 
+//GPS MODULE
+gps_data gdata;
+GPS *gps_instance = nullptr;
+
+
 // ================================================================================================
 // TAP PROTOCOL
     // Creating a global object is a good idea and definitely not frowned upon.
@@ -45,6 +51,16 @@ uint32_t ms_last_rx = 0;
     #define DATA_BITS 8
     #define STOP_BITS 1
     #define PARITY    UART_PARITY_NONE
+
+// ================================================================================================
+// GPS
+    //The uart port used by the GPS
+    #define GPS_UART_ID uart1
+
+/*  We use the same settings for both UART ports   
+    #define DATA_BITS 8
+    #define STOP_BITS 1
+    #define PARITY    UART_PARITY_NONE */
 
 // ================================================================================================
 //Although the change is quick enough not to break 99.9999% of the time, this could be atomic-ised.
@@ -77,13 +93,15 @@ uint8_t tap_telemetry(){
     //Fun fact if you don't use the delay we get a race condition!!! Wooo!!! :3
     //I had mutex implemented in an older, makeshift version, for reading from the GPS thing I think?
     //Maybe we should do that properly.
-    if(to_ms_since_boot(get_absolute_time()) - ms_last_tap >= 250){
+    if(to_ms_since_boot(get_absolute_time()) - ms_last_tap >= 500){
         ms_last_tap = to_ms_since_boot(get_absolute_time());
+
+        printf("[TELEM] [POS] %f, %f\n", gps_instance->output_gdata.latitude, gps_instance->output_gdata.longitude);
 
         TAP::TAP_TELEMETRY telem;
 
-        telem.lat = 43.323228;
-        telem.lon = -3.017115;
+        telem.lat = 0;
+        telem.lon = 0;
 
         // Use these for somewhat realistic values!
         //telem.alt = 50;
@@ -137,7 +155,6 @@ void tap_rx_irq(){
         }
         semaphore_down(tap_rx_buffers_sem);
         
-
         //Check if we should extract a packet from the diryt buffer
         if(tap_uart_rx_buffer_len>8){
             if(__builtin_bswap16((uint16_t)tap_uart_rx_buffer[tap_uart_rx_buffer_len]) == TAP::TAP_SOF_WORD){
@@ -154,7 +171,19 @@ void tap_rx_irq(){
             }
         }
     }
+}
 
+//The GPS library handles this internally, we just need to give it the data one byte at a time.
+void gps_rx_irq(){
+    //printf("[INTERRUPT] GPS\n");
+    if (uart_is_readable(GPS_UART_ID)) {
+        //printf("[INTERRUPT] UART READABLE!!\n");
+        uint8_t ch = uart_getc(gps_instance->uart_id);
+        gps_instance->uart_feeder(ch);
+    }
+    //printf("[INTERRUPT] DONE DEALING WITH UART1 INTERRUPTS!\n");
+    uart_set_irq_enables(GPS_UART_ID, true, false);
+    return;
 }
 
 uint8_t tap_rx_process(){
@@ -178,12 +207,12 @@ uint8_t tap_rx_process(){
         //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x1C, 0x01, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xAA, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x91, 0xB7, 0xAA, 0x55};
         
         //Direct command example from Gaizka's code
-        uint8_t test_buffer[32] = {0xAA, 0x55, 0x21, 0x2C, 0x14, 0x01, 0x00, 0x00, 0xE0, 0x1C, 0x00, 0x00, 0x38, 0x51, 0x54, 0x7A, 0x70, 0xA3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x76, 0x12, 0xAA, 0x55};
+        //uint8_t test_buffer[32] = {0xAA, 0x55, 0x21, 0x2C, 0x14, 0x01, 0x00, 0x00, 0xE0, 0x1C, 0x00, 0x00, 0x38, 0x51, 0x54, 0x7A, 0x70, 0xA3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x76, 0x12, 0xAA, 0x55};
         //Telemetry example
         //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x2E, 0x63, 0xC0, 0x3E, 0x55, 0x8F, 0x00, 0x00, 0x00, 0xF5, 0x42, 0xB4, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x2F, 0xEF, 0xAA, 0x55};
         
         //Telemetry example, single COBS field
-        //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x4A, 0xFC, 0xC0, 0x41, 0x18, 0x6A, 0x00, 0x00, 0x00, 0xC8, 0x42, 0x34, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x76, 0x62, 0xAA, 0x55};
+        uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x4A, 0xFC, 0xC0, 0x41, 0x18, 0x6A, 0x00, 0x00, 0x00, 0xC8, 0x42, 0x34, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x76, 0x62, 0xAA, 0x55};
 
         //Telemetry example, two COBS fields
         //uint8_t test_buffer[32] = {0xAA, 0x55, 0x02, 0x01, 0x14, 0x10, 0x00, 0x10, 0x42, 0x2D, 0x4A, 0xFC, 0xC0, 0x41, 0x18, 0x6A, 0x00, 0x12, 0x00, 0x00, 0x42, 0x34, 0x00, 0x00, 0x42, 0xB4, 0x00, 0x00, 0x42, 0xB0, 0xAA, 0x55};
@@ -233,12 +262,29 @@ int pico_gpio_init(void) {
     uart_set_format(TAP_UART_ID, DATA_BITS, STOP_BITS, PARITY);
     uart_set_fifo_enabled(TAP_UART_ID, false);
 
-    
     //UART receiving causes interrupts
     int UART_IRQ_0 = TAP_UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
     irq_set_exclusive_handler(UART_IRQ_0, tap_rx_irq);
     irq_set_enabled(UART_IRQ_0, true);
     uart_set_irq_enables(TAP_UART_ID, true, false);
+
+    //UART1 - GPS READINGS
+    // ==================================================================================== //
+    uart_init(GPS_UART_ID, 9600);
+    gpio_set_function(4, GPIO_FUNC_UART);
+    gpio_set_function(5, GPIO_FUNC_UART);
+
+    //Uart parity, fifo, format... settings
+    uart_set_hw_flow(GPS_UART_ID, false, false);
+    uart_set_format(GPS_UART_ID, DATA_BITS, STOP_BITS, PARITY);
+    uart_set_fifo_enabled(GPS_UART_ID, false);
+
+    //UART receiving causes interrupts
+    int UART_IRQ_1 = GPS_UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
+    irq_set_exclusive_handler(UART_IRQ_1, gps_rx_irq);
+    irq_set_enabled(UART_IRQ_1, true);
+    uart_set_irq_enables(GPS_UART_ID, true, false);
+
     return PICO_OK;
 }
 
@@ -250,7 +296,7 @@ uint8_t pico_set_led() {
         }
         else{
             gpio_put(PICO_DEFAULT_LED_PIN,false);
-        }
+        }uart_set_irq_enables(GPS_UART_ID, true, false);
     }
     else{
         ms_last_change = to_ms_since_boot(get_absolute_time());
@@ -258,9 +304,16 @@ uint8_t pico_set_led() {
     return(0);
 }
 
+
+
+
 int main() {
     stdio_init_all();
     sleep_ms(1000);
+    //Initialising the GPS library and setting the GPS global pointer (for the interrupt to use)
+    GPS gps(GPS_UART_ID, true, 4, 5);
+    gps_instance = &gps;
+
     int rc = pico_gpio_init();
     hard_assert(rc == PICO_OK);
 
@@ -270,6 +323,8 @@ int main() {
     char testByte = (char)0;
     
     while (true) {
+
+        printf("[DEBUG] Main loop :P\n");
         
         //Lighting effects, internally scheduled. To be improved.
         pico_set_led();
@@ -278,7 +333,7 @@ int main() {
         tap_telemetry();
 
         //Decodes a TAP message
-        //tap_rx_process();
+        tap_rx_process();
 
         //Reads from USB, polling
 

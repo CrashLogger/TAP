@@ -38,6 +38,7 @@ pico_sdk_init()
 add_executable(tap_test
     example.cpp
     src/TAP.cpp
+    src/GPS.cpp
     )
 
 target_include_directories(tap_test PUBLIC
