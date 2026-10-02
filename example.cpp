@@ -113,6 +113,8 @@ uint8_t tap_telemetry(){
         telem.alt = 0xAA55;
         telem.heading = 0xAA55;
 
+
+
         tap.tapSendTelem(telem);
         return(0);
     }
@@ -324,7 +326,7 @@ int main() {
     
     while (true) {
 
-        printf("[DEBUG] Main loop :P\n");
+        //printf("[DEBUG] Main loop :P\n");
         
         //Lighting effects, internally scheduled. To be improved.
         pico_set_led();

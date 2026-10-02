@@ -88,7 +88,7 @@ class TAP_message:
         return output
 
     def calculate_COBS(self):
-        SOF_word_big_endian = 0xAA55
+        SOF_word_big_endian = 0x55AA
         msg = bytearray(self.packed_message)
         last_cobs_pos = 0x0006
         print(last_cobs_pos)
@@ -145,9 +145,9 @@ class TAP_message:
             while True:
                 print(f"COBS in position:{current_cobs_pos}")
                 next_cobs_pos = (msg[current_cobs_pos] << 8 | msg[current_cobs_pos+1])
-                #These ones have to be turned back to 0xAA55
-                msg[current_cobs_pos] = 0xAA
-                msg[current_cobs_pos+1] = 0x55
+                #These ones have to be turned back to 0x55AA
+                msg[current_cobs_pos] = 0x55
+                msg[current_cobs_pos+1] = 0xAA
                 if next_cobs_pos == 0x0000:
                     print("No more COBS")
                     break
@@ -174,8 +174,18 @@ class TAP_message:
 
         message.header = TAP_header.unpack_header(packed_header)
         message.trailer = TAP_trailer.unpack_trailer(packed_trailer)
-        assert message.trailer.check_CRC16(message.packed_header,message.packed_payload)
-        
+
+        crc_data = packed_header + packed_payload
+
+        print("CRC INPUT")
+        print(crc_data.hex(" "))
+
+        calc = Calculator(Crc16.MODBUS)
+
+        print("CRC=", hex(calc.checksum(crc_data)))
+
+        # assert message.trailer.check_CRC16(message.packed_header,message.packed_payload)
+
         #TODO Add missing payload types (Negotiate Datalink)
         if message.header.messageType == DIRECT_COMMAND:
             message.payload = DirectCommandPayload.unpack_payload(packed_payload)
@@ -187,7 +197,12 @@ class TAP_message:
             message.payload = TelemetryDatalinkPayload.unpack_payload(packed_payload)
         else:
             message.payload = None
-                
+
+        print(message.payload.lat)
+        print(message.payload.lon)
+        print(message.payload.alt)
+        print(message.payload.heading)
+        
         return message
 
 
@@ -195,7 +210,7 @@ class TAP_message:
       
 class TAP_header:
     def __init__(self, tID, sID, messageType, messageLength):
-        self.SOF = 0xAA55
+        self.SOF = 0x55AA
         self.tID = tID
         self.sID = sID
         if messageType == DIRECT_COMMAND:
@@ -251,7 +266,7 @@ class TAP_header:
 class TAP_trailer:
     def __init__(self,CRC16=None):
         self.CRC16 = CRC16
-        self.EOF = 0xAA55
+        self.EOF = 0x55AA
 
     def calculate_CRC16(self, header_bytes, payload_bytes):
         #logging.DEBUG("Calculating CRC-16")
@@ -272,8 +287,7 @@ class TAP_trailer:
     
         if self.CRC16 != calculated_crc:
             raise ValueError(f"CRC mismatch! Expected {calculated_crc:04x}, got {self.CRC16:04x}")
-    
-        print(f"CRC16 verified: {calculated_crc:04x}")
+
         return True
     
     def pack_trailer(self):

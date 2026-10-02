@@ -88,11 +88,11 @@ void GPS::uart_irq_handler() {
 
 void GPS::uart_feeder(uint8_t byte){
     if(byte == '$'){
-        printf("[DEBUG] [GNSS SENTENCE]:");
+/*         printf("[DEBUG] [GNSS SENTENCE]:");
         for(size_t i = 0; i<buffer_cursor; i++){
             printf("%02x", buffer[i]);
         }
-        printf("\n");
+        printf("\n"); */
         output_gdata = parse_string();
         buffer_cursor = 0;
         memset(buffer, 0, sizeof(buffer));

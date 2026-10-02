@@ -226,6 +226,16 @@
         if(received_trailer.crc_16 != check_crc_16){
             return(TAP::TAP_ERROR_CRC_MISMATCH);
         }
+
+        printf("CRC INPUT:\n");
+        
+        for(int i=0;i<sizeof(TAP_ADDRESS_HEADER)+received_header.message_len;i++)
+        {
+            printf("%02X ", raw_message[i]);
+        }
+        
+        printf("\nCRC=%04X\n", check_crc_16);
+
         return(TAP::TAP_OK);
     }
 
