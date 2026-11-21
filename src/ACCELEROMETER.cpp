@@ -1,9 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include "pico/stdlib.h"
-#include "pico/binary_info.h"
 #include "hardware/i2c.h"
+#include "math.h"
 #include "ACCELEROMETER.h"
 
 
@@ -12,13 +8,15 @@ ACCELEROMETER::~ACCELEROMETER(){
 ACCELEROMETER::ACCELEROMETER(){
     config();
 }
-ACCELEROMETER::ACCELEROMETER(uint8_t i2c, uint8_t SCL, uint8_t SDA){
+ACCELEROMETER::ACCELEROMETER(i2c_inst_t* i2c, uint8_t SCL, uint8_t SDA){
   //Initialising 
     gpio_set_function(SCL, GPIO_FUNC_I2C);
     gpio_set_function(SDA, GPIO_FUNC_I2C);
     gpio_pull_up(SCL);
     gpio_pull_up(SDA);
   
+     
+
     i2c_init(i2c1, 400*1000);
     config();
   }

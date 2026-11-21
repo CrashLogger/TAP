@@ -4,6 +4,7 @@
 #include "string.h"
 #include "TAP.h"
 #include "GPS.h"
+#include "ACCELEROMETER.h"
 
 //===== DEFINITIONS
 
@@ -63,6 +64,13 @@ GPS *gps_instance = nullptr;
     #define PARITY    UART_PARITY_NONE */
 
 // ================================================================================================
+// IMU
+    //The i2c bus used by the IMU
+    #define IMU_I2C_ID i2c0
+
+    ACCELEROMETER accel(i2c0, 27, 26); 
+
+// ================================================================================================
 //Although the change is quick enough not to break 99.9999% of the time, this could be atomic-ised.
 //Semaphore UP is blocking!
 uint8_t semaphore_up(bool sem){
@@ -96,24 +104,33 @@ uint8_t tap_telemetry(){
     if(to_ms_since_boot(get_absolute_time()) - ms_last_tap >= 500){
         ms_last_tap = to_ms_since_boot(get_absolute_time());
 
-        printf("[TELEM] [POS] %f, %f\n", gps_instance->output_gdata.latitude, gps_instance->output_gdata.longitude);
+        printf("[TELEM] LAT=%f LON=%f ROLL=%f PITCH=%f\n",gps_instance->output_gdata.latitude, gps_instance->output_gdata.longitude, accel.getRoll(), accel.getPitch());
 
         TAP::TAP_TELEMETRY telem;
 
-        telem.lat = 0;
-        telem.lon = 0;
+        //telem.lat = 0;
+        //telem.lon = 0;
 
         // Use these for somewhat realistic values!
         //telem.alt = 50;
         //telem.heading = 200;
-        telem.pitch = 90.0;
-        telem.roll = 45.0;
+        //telem.pitch = 90.0;
+        //telem.roll = 45.0;
 
         // Use these to check if COBS works!
-        telem.alt = 0xAA55;
-        telem.heading = 0xAA55;
+        //telem.alt = 0xAA55;
+        //telem.heading = 0xAA55;
 
 
+        //Setting every value we don't yet have as 0
+        telem.heading = 0;
+        telem.alt = 0;
+
+        telem.lat = gps_instance->output_gdata.latitude;
+        telem.lon = gps_instance->output_gdata.longitude;
+
+        telem.pitch = accel.getPitch();
+        telem.roll = accel.getRoll();
 
         tap.tapSendTelem(telem);
         return(0);
@@ -245,7 +262,6 @@ uint8_t tap_rx_process(){
     }
     return 1;
 }
-
 
 // GPIO Initialisation should all happen here pls thx
 int pico_gpio_init(void) {

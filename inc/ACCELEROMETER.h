@@ -1,8 +1,4 @@
-
-
 #include <stdio.h>
-#include <string.h>
-#include <math.h>
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
@@ -43,7 +39,7 @@ class ACCELEROMETER{
         float getRoll();
 
     public:
-    ACCELEROMETER(uint8_t i2c, uint8_t SCL, uint8_t SDA);
+    ACCELEROMETER(i2c_inst_t* i2c, uint8_t SCL, uint8_t SDA);
     ACCELEROMETER();
     ~ACCELEROMETER();
 

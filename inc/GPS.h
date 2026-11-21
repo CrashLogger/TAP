@@ -1,9 +1,7 @@
 #include <stdio.h>
-#include <string.h>
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
-#include "string.h"
 
 #ifndef __GPS_H_
 #define __GPS_H_
