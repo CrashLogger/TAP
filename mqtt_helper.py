@@ -127,6 +127,11 @@ def publish_datalink(mqtt, payload):
     )
 
     mqtt.publish(
+        "RX-DELTAT",
+        payload.DELTA_T
+    )
+
+    mqtt.publish(
         "RX-PKTS",
         payload.SENT_PKTS
     )

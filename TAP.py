@@ -198,11 +198,24 @@ class TAP_message:
         else:
             message.payload = None
 
-        print(message.payload.lat)
-        print(message.payload.lon)
-        print(message.payload.alt)
-        print(message.payload.heading)
-        
+        if message.header.messageType == TELEMETRY:
+            print(
+                f"[TELEM] "
+                f"ALT={message.payload.alt} "
+                f"HDG={message.payload.heading}"
+            )
+
+        elif message.header.messageType == TELEMETRY_DATALINK:
+
+            print(
+                f"[DL] "
+                f"RSSI={message.payload.RSSI} "
+                f"SNR={message.payload.SNR} "
+                f"RTT={message.payload.RTT} "
+                f"PKTS={message.payload.SENT_PKTS} "
+                f"DT={message.payload.DELTA_T}"
+            )
+                
         return message
 
 
@@ -530,7 +543,7 @@ class TelemetryDatalinkPayload:
     def unpack_payload(cls, packed_data):
         
         RSSI, SNR, RTT, SENT_PKTS, DELTA_T, reserved = struct.unpack(
-            '>hHHHHH', packed_data
+            '>hHHHHH', packed_data[:12]
         )
         return cls(RSSI,SNR,RTT,SENT_PKTS,DELTA_T)  
     
